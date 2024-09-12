@@ -1,8 +1,14 @@
 /* eslint-disable prettier/prettier */
+import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
-const LoginScreen = () => {
+import { RootStackParamList } from '../navigation';
+
+// Definindo o tipo das props
+type Props = StackScreenProps<RootStackParamList, 'Login'>;
+
+const LoginScreen = ({ navigation }: Props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -21,6 +27,7 @@ const LoginScreen = () => {
         placeholder="Usuário ou email"
         onChangeText={setUsername}
         value={username}
+        placeholderTextColor="#fff"
       />
 
       <TextInput
@@ -29,11 +36,13 @@ const LoginScreen = () => {
         secureTextEntry
         onChangeText={setPassword}
         value={password}
+        placeholderTextColor="#fff"
       />
 
       <TouchableOpacity
         style={styles.forgotPassword}
-        onPress={() => Alert.alert('Forgot Password', 'Implement password recovery logic here.')}>
+        onPress={() => Alert.alert('Forgot Password', 'Implement password recovery logic here.')}
+      >
         <Text style={styles.forgotPasswordText}>Esqueci a senha</Text>
       </TouchableOpacity>
 
@@ -41,11 +50,10 @@ const LoginScreen = () => {
         <Text style={styles.buttonText}>Entrar</Text>
       </TouchableOpacity>
 
-      <Text style={styles.orText}>Ou</Text>
-
       <TouchableOpacity
         style={styles.createAccount}
-        onPress={() => Alert.alert('Create Account', 'Implement account creation logic here.')}>
+        onPress={() => navigation.navigate('SignupStep1')} // Navegação para SignupStep1
+      >
         <Text style={styles.createAccountText}>Criar conta</Text>
       </TouchableOpacity>
     </View>
@@ -66,42 +74,43 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   input: {
-    width: '80%',
+    width: '70%',
+    height: 50,
     padding: 15,
     backgroundColor: '#222',
     borderRadius: 10,
     marginBottom: 15,
     color: '#fff',
+    borderColor: 'white',
+    borderWidth: 1,
   },
   forgotPassword: {
     marginBottom: 15,
+    width: '70%',
   },
   forgotPasswordText: {
     color: '#fff',
-    textDecorationLine: 'underline',
+    alignSelf: 'flex-end',
   },
   button: {
     backgroundColor: '#512DA8',
     padding: 15,
-    borderRadius: 10,
-    width: '80%',
+    borderRadius: 50,
+    width: '70%',
+    height: 50,
     alignItems: 'center',
+    marginTop: 15,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: 'bold',
-  },
-  orText: {
-    color: '#fff',
-    marginTop: 15,
   },
   createAccount: {
     marginTop: 20,
   },
   createAccountText: {
     color: '#fff',
-    textDecorationLine: 'underline',
   },
 });
 
