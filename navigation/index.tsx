@@ -5,7 +5,10 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1'; 
 import SignupStep2 from '../screens/signupStep2'; 
-import SignupStep3 from '../screens/signupStep3'; 
+import SignupStep3 from '../screens/signupStep3';
+import GameSelect from '../screens/gameSelect';
+import Profile from '../screens/profile';
+import MyProfile from '../screens/myProfile';
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -15,7 +18,9 @@ export type RootStackParamList = {
   SignupStep1: undefined;
   SignupStep2: undefined;
   SignupStep3: undefined;
-
+  GameSelect: undefined;
+  Profile: undefined;
+  MyProfile: undefined;
 
 };
 
@@ -25,8 +30,12 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+      <Stack.Navigator initialRouteName="GameSelect">
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="SignupStep1"
           component={SignupStep1} 
@@ -40,6 +49,21 @@ export default function RootStack() {
         <Stack.Screen
           name="SignupStep3"
           component={SignupStep3} 
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="GameSelect"
+          component={GameSelect}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={Profile}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MyProfile"
+          component={MyProfile}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
