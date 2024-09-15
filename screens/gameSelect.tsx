@@ -2,7 +2,7 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
-
+import Icon from "react-native-vector-icons/Feather"
 import { RootStackParamList } from '../navigation';
 
 // Defining the type of props
@@ -37,37 +37,44 @@ const GameSelect = ({ navigation }: Props) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} >
       <Text style={styles.title}>Quais jogos você joga?</Text>
 
-      {/* Search Bar */}
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Pesquisar"
-        placeholderTextColor="#aaa"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
+      <View style={styles.gamesSection} >
 
-      {/* Game List */}
-      <FlatList
-        data={filteredGames}
-        keyExtractor={(item) => item.id}
-        numColumns={3}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.gameIconContainer,
-              selectedGames.includes(item.id) && styles.selectedGameIconContainer
-            ]}
-            onPress={() => toggleSelectGame(item.id)}
-          >
-            <Image source={item.icon} style={styles.gameIcon} />
-          </TouchableOpacity>
-        )}
-        style={styles.gameList}
-      />
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Icon name="search" size={24} color="#fff" style={styles.icon} />
+          <TextInput
+            style={styles.searchBar}
+            placeholder="Pesquisar"
+            placeholderTextColor="#aaa"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
 
+        {/* Game List */}
+        <FlatList
+          data={filteredGames}
+          keyExtractor={(item) => item.id}
+          numColumns={3}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.gameIconContainer,
+                selectedGames.includes(item.id) && styles.selectedGameIconContainer
+              ]}
+              onPress={() => toggleSelectGame(item.id)}
+            >
+              <Image source={item.icon} style={styles.gameIcon} />
+            </TouchableOpacity>
+          )}
+          style={styles.gameList}
+        />
+
+
+      </View>
       {/* Save Selected Games Button */}
       <TouchableOpacity
         style={styles.button}
@@ -94,18 +101,23 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: 'bold',
     color: '#fff',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   searchBar: {
-    width: '80%',
-    height: 40,
-    backgroundColor: '#222',
-    borderRadius: 10,
+    width: '100%',
+    height: 20,
     paddingHorizontal: 15,
     color: '#fff',
-    borderColor: 'white',
-    borderWidth: 1,
-    marginBottom: 20,
+    flex: 1, // Para o TextInput ocupar o espaço restante
+    fontSize: 16, // Tamanho da fonte
+  },
+  gamesSection: {
+    width: "70%",
+    height: 300,
+    backgroundColor: "#363636",
+    display: "flex",
+    alignItems: "center",
+    borderRadius: 5
   },
   gameList: {
     flexGrow: 0,
@@ -122,23 +134,38 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   gameIcon: {
-    width: 60,
-    height: 60,
+    width: 75,
+    height: 75,
+    borderRadius: 5
+
   },
   button: {
     backgroundColor: '#512DA8',
     padding: 15,
-    borderRadius: 50,
+    borderRadius: 10,
     width: '70%',
     height: 50,
     alignItems: 'center',
-    marginTop: 15,
+    marginTop: 30,
   },
   buttonText: {
     color: '#fff',
     fontSize: 15,
     fontWeight: 'bold',
   },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: "center",
+    borderRadius: 5,
+    paddingLeft: 15,
+    paddingTop: 15,
+    marginBottom: 10
+  },
+  icon: {
+    marginRight: 0, // Espaço entre o ícone e o TextInput
+  },
+  
 });
 
 export default GameSelect;

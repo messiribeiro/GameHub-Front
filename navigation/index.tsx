@@ -24,7 +24,8 @@ export type RootStackParamList = {
   SignupStep3: undefined;
   GameSelect: undefined;
   Profile: { selectedGames: string[] };
-  MyProfile: undefined;
+  Settings: undefined;
+  MyProfile: { selectedGames: string[] };
   Home: undefined;
 
 
@@ -40,7 +41,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="GameSelect">
         <Stack.Screen
           name="Login"
           component={Login}
