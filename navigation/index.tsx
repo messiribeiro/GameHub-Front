@@ -1,12 +1,17 @@
 /* eslint-disable prettier/prettier */
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
 
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1'; 
 import SignupStep2 from '../screens/signupStep2'; 
 import SignupStep3 from '../screens/signupStep3'; 
-import home from '../screens/home'; 
+import GameSelect from 'screens/gameSelect';
+import MyProfile from 'screens/myProfile';
+import Profile from 'screens/profile';
+import Home from 'screens/home';
 
 
 // Definindo o tipo de parâmetros das rotas
@@ -17,11 +22,17 @@ export type RootStackParamList = {
   SignupStep1: undefined;
   SignupStep2: undefined;
   SignupStep3: undefined;
-  home: undefined;
+  GameSelect: undefined;
+  Profile: { selectedGames: string[] };
+  MyProfile: undefined;
+  Home: undefined;
 
 
 
 };
+
+const Tab = createBottomTabNavigator();
+
 
 // Criando o Stack Navigator
 const Stack = createStackNavigator<RootStackParamList>();
@@ -29,8 +40,12 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="home">
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="SignupStep1"
           component={SignupStep1} 
@@ -47,10 +62,26 @@ export default function RootStack() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="home"
-          component={home} 
+          name="GameSelect"
+          component={GameSelect}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="Profile"
+          component={Profile}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MyProfile"
+          component={MyProfile}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{ headerShown: false }}
+        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
