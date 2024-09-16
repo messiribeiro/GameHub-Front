@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 
@@ -10,6 +11,24 @@ type Props = StackScreenProps<RootStackParamList, 'SignupStep2'>;
 
 const SignUpStep2 = ({ navigation }: Props) => {
   const [password, setPassword] = useState('');
+
+  const handleNext = async () => {
+    if (password.length < 8) {
+      Alert.alert('Erro', 'Sua senha deve ter, no mínimo, 8 caracteres.');
+      return;
+    }
+
+    try {
+      // Salvar a senha no AsyncStorage
+      await AsyncStorage.setItem('userPassword', password);
+
+      // Navegar para a próxima tela
+      navigation.navigate('SignupStep3');
+    } catch (error) {
+      Alert.alert('Erro', 'Ocorreu um erro ao salvar a senha.');
+      console.error(error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -24,7 +43,7 @@ const SignUpStep2 = ({ navigation }: Props) => {
         value={password}
         placeholderTextColor="#fff"
       />
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SignupStep3')}>
+      <TouchableOpacity style={styles.button} onPress={handleNext}>
         <Text style={styles.buttonText}>Avançar</Text>
       </TouchableOpacity>
     </View>

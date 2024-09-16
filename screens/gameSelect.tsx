@@ -1,34 +1,60 @@
 /* eslint-disable prettier/prettier */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
-import Icon from "react-native-vector-icons/Feather"
+import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
+import Icon from "react-native-vector-icons/Feather";
 
 import { RootStackParamList } from '../navigation';
 
-// Defining the type of props
+// Definindo o tipo das props
 type Props = StackScreenProps<RootStackParamList, 'GameSelect'>;
 
 const GameSelect = ({ navigation }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGames, setSelectedGames] = useState<string[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
 
   const games = [
-    { id: '1', name: 'Fortnite', icon: require('../assets/gameIcons/fortnite.png') },
-    { id: '2', name: 'GTAV', icon: require('../assets/gameIcons/gtaV.png') },
-    { id: '3', name: 'Counter-Strike 2', icon: require('../assets/gameIcons/cs2.png') },
-    { id: '4', name: 'Valorant', icon: require('../assets/gameIcons/valorant.png') },
-    { id: '5', name: 'Minecraft', icon: require('../assets/gameIcons/minecraft.png') },
-    { id: '6', name: 'League of Legends', icon: require('../assets/gameIcons/lol.png') },
+    {
+      id: '1',
+      name: 'Apex Legends',
+      icon: { uri: 'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200' },
+    },
+    {
+      id: '2',
+      name: 'World of Warcraft',
+      icon: { uri: 'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg' },
+    },
+    {
+      id: '3',
+      name: 'Age of Empires',
+      icon: { uri: 'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg' },
+    },
+    {
+      id: '4',
+      name: 'League of Legends',
+      icon: { uri: 'https://static.wikia.nocookie.net/leagueoflegends/images/7/76/LoL_Icon.png/revision/latest?cb=20170427054945' },
+    },
     // Add more games here
   ];
 
-  // Filter the games based on search query
+  // Carregar o ID do usuário do AsyncStorage
+  useEffect(() => {
+    const loadUserId = async () => {
+      const id = await AsyncStorage.getItem('userId');
+      setUserId(id);
+    };
+    loadUserId();
+  }, []);
+
+  // Filtra os jogos com base na busca
   const filteredGames = games.filter(game =>
     game.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Toggle selection of games
+  // Alterna a seleção de jogos
   const toggleSelectGame = (gameId: string) => {
     if (selectedGames.includes(gameId)) {
       setSelectedGames(selectedGames.filter(id => id !== gameId));
@@ -37,13 +63,30 @@ const GameSelect = ({ navigation }: Props) => {
     }
   };
 
+  // Salva os jogos selecionados e atualiza os dados do usuário
+  const handleSave = async () => {
+    if (userId) {
+      try {
+        // Salva os jogos selecionados no AsyncStorage
+        await AsyncStorage.setItem(`selectedGames_${userId}`, JSON.stringify(selectedGames));
+
+        // Navega para a próxima tela
+        navigation.navigate('Home'); 
+      } catch (error) {
+        console.error('Failed to save selected games:', error);
+        Alert.alert('Erro', 'Não foi possível salvar os jogos selecionados.');
+      }
+    } else {
+      Alert.alert('Erro', 'Usuário não encontrado.');
+    }
+  };
+
   return (
-    <View style={styles.container} >
+    <View style={styles.container}>
       <Text style={styles.title}>Quais jogos você joga?</Text>
 
-      <View style={styles.gamesSection} >
-
-        {/* Search Bar */}
+      <View style={styles.gamesSection}>
+        {/* Barra de Pesquisa */}
         <View style={styles.searchContainer}>
           <Icon name="search" size={24} color="#fff" style={styles.icon} />
           <TextInput
@@ -55,7 +98,7 @@ const GameSelect = ({ navigation }: Props) => {
           />
         </View>
 
-        {/* Game List */}
+        {/* Lista de Jogos */}
         <FlatList
           data={filteredGames}
           keyExtractor={(item) => item.id}
@@ -73,17 +116,12 @@ const GameSelect = ({ navigation }: Props) => {
           )}
           style={styles.gameList}
         />
-
-
       </View>
-      {/* Save Selected Games Button */}
+
+      {/* Botão para salvar jogos selecionados */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => {
-          console.log('Selected games:', selectedGames);
-          // You can pass the selected games to another screen or save them
-          navigation.navigate('MyProfile', { selectedGames });
-        }}
+        onPress={handleSave}
       >
         <Text style={styles.buttonText}>Avançar</Text>
       </TouchableOpacity>
@@ -109,8 +147,8 @@ const styles = StyleSheet.create({
     height: 20,
     paddingHorizontal: 15,
     color: '#fff',
-    flex: 1, // Para o TextInput ocupar o espaço restante
-    fontSize: 16, // Tamanho da fonte
+    flex: 1,
+    fontSize: 16,
   },
   gamesSection: {
     width: "70%",
@@ -118,7 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#363636",
     display: "flex",
     alignItems: "center",
-    borderRadius: 5
+    borderRadius: 5,
   },
   gameList: {
     flexGrow: 0,
@@ -137,8 +175,7 @@ const styles = StyleSheet.create({
   gameIcon: {
     width: 75,
     height: 75,
-    borderRadius: 5
-
+    borderRadius: 5,
   },
   button: {
     backgroundColor: '#512DA8',
@@ -164,9 +201,8 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   icon: {
-    marginRight: 0, // Espaço entre o ícone e o TextInput
+    marginRight: 0,
   },
-  
 });
 
 export default GameSelect;

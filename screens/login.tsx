@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import axios from 'axios'; 
 import React, { useState } from 'react';
@@ -23,11 +24,13 @@ const LoginScreen = ({ navigation }: Props) => {
         email: username,
         password,
       });
-
-      // Se o login for bem-sucedido, redireciona o usuário para a tela inicial
-      Alert.alert('Login Successful!', 'Welcome!');
-      // Aqui você pode navegar para a tela que deseja, por exemplo:
-      // navigation.navigate('Home');
+      if (response.status === 200 && response.data.success && response.data.data.user) {
+        const userId = response.data.data.user.id
+        await AsyncStorage.setItem('userId', userId);
+        navigation.replace('Home');
+      }
+      
+      navigation.replace('Home');
     } catch (error) {
       console.error(error);
       Alert.alert('Login Failed', 'Invalid username or password'); // Exibe mensagem em caso de falha

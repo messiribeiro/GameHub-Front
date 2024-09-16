@@ -1,8 +1,14 @@
+import { StackScreenProps } from '@react-navigation/stack';
 import Header from 'components/Header';
 import TabMenu from 'components/TabMenu';
 import React from 'react';
-import { View, Text, Image, StyleSheet, FlatList, ScrollView, Dimensions } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+
+import { RootStackParamList } from '../navigation'; // Atualize o caminho conforme sua estrutura de pastas
+
+// Definindo o tipo das props
+type Props = StackScreenProps<RootStackParamList, 'Home'>;
 
 interface Post {
   id: string;
@@ -14,40 +20,18 @@ interface Post {
   time: string;
 }
 
-const posts: Post[] = [
-  {
-    id: '1',
-    username: 'User1',
-    caption: 'Namoral n tô acreditando q fiz isso kkk',
-    imageUrl:
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-    likes: 50,
-    comments: 12,
-    time: 'Há 5h',
-  },
-  {
-    id: '2',
-    username: 'User1',
-    caption: 'Namoral n tô acreditando q fiz isso kkk',
-    imageUrl:
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-    likes: 50,
-    comments: 12,
-    time: 'Há 5h',
-  },
-];
-
 const images = [
-  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-  'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
+  'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
+  'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
+  'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
 ];
 
-const Home = () => {
+const Home = ({ navigation }: Props) => {
+  const handleImagePress = (imageUrl: string) => {
+    // Navega para a tela FindGamer
+    navigation.navigate('FindGamer');
+  };
+
   return (
     <>
       <ScrollView style={styles.container}>
@@ -60,7 +44,13 @@ const Home = () => {
         <View style={styles.games}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
             {images.map((imageUrl, index) => (
-              <Image key={index} source={{ uri: imageUrl }} style={styles.image} />
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleImagePress(imageUrl)} // Adiciona a função de clique
+                style={styles.imageContainer} // Adiciona um contêiner para definir o tamanho e o espaçamento das imagens
+              >
+                <Image source={{ uri: imageUrl }} style={styles.image} />
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
@@ -76,7 +66,12 @@ const Home = () => {
               <Text style={styles.userName}>User1</Text>
             </View>
             <Text style={styles.postTitle}>Namoral não acredto que fiz isso</Text>
-            <View style={styles.postContent} />
+            <Image
+              style={styles.postContent}
+              source={{
+                uri: 'https://cdn.mos.cms.futurecdn.net/csQgknvLgV4P4ABbFSZdrE.jpg',
+              }}
+            />
             <View style={styles.dataView}>
               <View style={styles.postData}>
                 <View style={styles.commentsAndLikes}>
@@ -139,11 +134,13 @@ const styles = StyleSheet.create({
   scrollView: {
     paddingTop: 15,
   },
-  image: {
-    width: 70, // Defina a largura desejada para suas imagens
-    height: 70, // Defina a altura desejada para suas imagens
-    borderRadius: 10, // Bordas arredondadas, opcional
+  imageContainer: {
     marginRight: 10, // Espaçamento entre as imagens
+  },
+  image: {
+    width: 70,
+    height: 70,
+    borderRadius: 10,
   },
 
   post: {
@@ -163,7 +160,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 250,
     backgroundColor: 'white',
-    // borderRadius: 10,
     marginTop: 5,
   },
   postData: {

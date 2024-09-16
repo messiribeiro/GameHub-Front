@@ -11,12 +11,30 @@ const MyProfile = ({ route, navigation }: Props) => {
   const { selectedGames } = route.params;
 
   const games = [
-    { id: '1', name: 'Fortnite', icon: require('../assets/gameIcons/fortnite.png') },
-    { id: '2', name: 'GTAV', icon: require('../assets/gameIcons/gtaV.png') },
-    { id: '3', name: 'Counter-Strike 2', icon: require('../assets/gameIcons/cs2.png') },
-    { id: '4', name: 'Valorant', icon: require('../assets/gameIcons/valorant.png') },
-    { id: '5', name: 'Minecraft', icon: require('../assets/gameIcons/minecraft.png') },
-    { id: '6', name: 'League of Legends', icon: require('../assets/gameIcons/lol.png') },
+    {
+      id: '1',
+      name: 'Apex Legends',
+      icon: {
+        uri: 'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
+      },
+    },
+    {
+      id: '2',
+      name: 'World of Warcraft',
+      icon: { uri: 'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg' },
+    },
+    {
+      id: '3',
+      name: 'Age of Empires',
+      icon: { uri: 'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg' },
+    },
+    {
+      id: '4',
+      name: 'League of Legends',
+      icon: {
+        uri: 'https://static.wikia.nocookie.net/leagueoflegends/images/7/76/LoL_Icon.png/revision/latest?cb=20170427054945',
+      },
+    },
     // Add more games here
   ];
 
