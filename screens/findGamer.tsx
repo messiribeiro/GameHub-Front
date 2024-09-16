@@ -1,5 +1,14 @@
+/* eslint-disable import/order */
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+} from 'react-native';
 import TabMenu from 'components/TabMenu';
 import Header from 'components/Header';
 
@@ -13,7 +22,7 @@ const users = [
     games: [
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg'
+      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
     ],
   },
   {
@@ -23,7 +32,7 @@ const users = [
     games: [
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg'
+      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
     ],
   },
   {
@@ -33,7 +42,7 @@ const users = [
     games: [
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg'
+      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
     ],
   },
   {
@@ -43,7 +52,7 @@ const users = [
     games: [
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg'
+      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
     ],
   },
   {
@@ -53,7 +62,7 @@ const users = [
     games: [
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg'
+      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
     ],
   },
   {
@@ -63,7 +72,7 @@ const users = [
     games: [
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
       'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg'
+      'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
     ],
   },
   // Adicione mais usuários aqui
@@ -100,15 +109,13 @@ const FindGamer = () => {
   return (
     <>
       <View style={styles.container}>
-        <Header/>
+        <Header />
         <FlatList
           data={users}
           renderItem={renderUser}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           initialScrollIndex={currentUserIndex}
-          getItemLayout={(data, index) => (
-            { length: height, offset: height * index, index }
-          )}
+          getItemLayout={(data, index) => ({ length: height, offset: height * index, index })}
           onMomentumScrollEnd={(event) => {
             const index = Math.floor(event.nativeEvent.contentOffset.y / height);
             setCurrentUserIndex(index);
@@ -130,16 +137,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
     paddingTop: '10%',
-    
   },
   gamerData: {
     width: '100%',
-    height: height, // Altura igual à altura da tela
+    height, // Altura igual à altura da tela
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    top: -50
-
+    top: -50,
   },
   userImage: {
     width: 100,

@@ -42,7 +42,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="FindGamer">
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
           name="Login"
           component={Login}

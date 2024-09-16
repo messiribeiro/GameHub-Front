@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { StackScreenProps } from '@react-navigation/stack';
+import axios from 'axios'; 
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
@@ -12,10 +13,25 @@ const LoginScreen = ({ navigation }: Props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // Perform login logic here
-    // Replace with your actual authentication logic
-    Alert.alert('Login Successful!', 'Welcome!');
+  const handleLogin = async () => {
+    if (!username || !password) {
+      return; // Não faz nada se username ou password estiverem vazios
+    }
+
+    try {
+      const response = await axios.post('https://gamehub-back-6h0k.onrender.com/api/auth/login', {
+        email: username,
+        password,
+      });
+
+      // Se o login for bem-sucedido, redireciona o usuário para a tela inicial
+      Alert.alert('Login Successful!', 'Welcome!');
+      // Aqui você pode navegar para a tela que deseja, por exemplo:
+      // navigation.navigate('Home');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Login Failed', 'Invalid username or password'); // Exibe mensagem em caso de falha
+    }
   };
 
   return (

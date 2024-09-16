@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
@@ -11,7 +12,12 @@ type Props = StackScreenProps<RootStackParamList, 'SignupStep1'>;
 const SignUpStep1 = ({ navigation }: Props) => {
   const [username, setUsername] = useState('');
 
- 
+  const handleNext = async () => {
+    if (username) { // Verifica se o campo não está vazio
+      await AsyncStorage.setItem('username', username); // Armazenar nome de usuário
+      navigation.navigate('SignupStep2'); // Navegar para a próxima etapa
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -26,7 +32,7 @@ const SignUpStep1 = ({ navigation }: Props) => {
         placeholderTextColor="#fff"
       />
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('SignupStep2')}>
+      <TouchableOpacity style={styles.button} onPress={handleNext}>
         <Text style={styles.buttonText}>Avançar</Text>
       </TouchableOpacity>
     </View>
