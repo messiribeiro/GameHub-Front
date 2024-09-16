@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, FlatList, ScrollView, Dimensions} from 'react-native';
-import TabMenu from 'components/tabMenu';
+import TabMenu from 'components/TabMenu';
 import Icon from 'react-native-vector-icons/Feather';
+import Header from 'components/Header';
+
 
 interface Post {
   id: string;
@@ -49,10 +51,8 @@ const Home = () => {
   return (
     <>
     <ScrollView style={styles.container} >
-      <View style={styles.header}>
-        <Image style={styles.userImage} source={{ uri: 'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg' }} />
-        <Text style={styles.title}>GameHub</Text>
-      </View>
+      
+      <Header/>
 
       <View style={styles.searchContainer}>
         <Text style={styles.searchTitle} >O que você quer jogar hoje?</Text>
@@ -114,26 +114,13 @@ const styles = StyleSheet.create({
     color: "white",
     paddingBottom: 40
   },
-  header: {
-    display: "flex",
-    flexDirection: "row",
-    paddingLeft: "2%",
-    paddingRight: "2%",
-    alignItems: "center",
-    justifyContent: "space-between"
-    
-  },
+  
   userImage: {
     width: 40,
     height: 40,
     borderRadius: 50,
   },
-  title: {
-    fontSize: 20,
-    color: "white",
-    fontWeight: "800",
-    
-  },
+  
   searchContainer: {
     display: "flex",
     flexDirection: "row",

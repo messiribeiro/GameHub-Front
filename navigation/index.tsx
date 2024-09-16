@@ -12,7 +12,7 @@ import GameSelect from 'screens/gameSelect';
 import MyProfile from 'screens/myProfile';
 import Profile from 'screens/profile';
 import Home from 'screens/home';
-
+import FindGamer from 'screens/findGamer';
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -27,6 +27,7 @@ export type RootStackParamList = {
   Settings: undefined;
   MyProfile: { selectedGames: string[] };
   Home: undefined;
+  FindGamer: undefined;
 
 
 
@@ -41,7 +42,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="GameSelect">
+      <Stack.Navigator initialRouteName="FindGamer">
         <Stack.Screen
           name="Login"
           component={Login}
@@ -80,6 +81,11 @@ export default function RootStack() {
         <Stack.Screen
           name="Home"
           component={Home}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FindGamer"
+          component={FindGamer}
           options={{ headerShown: false }}
         />
         
