@@ -1,4 +1,6 @@
-/* eslint-disable import/order */
+/* eslint-disable prettier/prettier */
+import Header from 'components/Header';
+import TabMenu from 'components/TabMenu';
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -8,13 +10,19 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
+  ListRenderItem 
 } from 'react-native';
-import TabMenu from 'components/TabMenu';
-import Header from 'components/Header';
 
 const { height } = Dimensions.get('window');
 
-const users = [
+interface User {
+  id: string;
+  username: string;
+  bioText: string;
+  games: string[];
+}
+
+const users: User[] = [
   {
     id: '1',
     username: '@joazin',
@@ -86,24 +94,23 @@ const FindGamer = () => {
       setCurrentUserIndex(currentUserIndex + 1);
     }
   };
-
-  const renderUser = ({ item }) => (
+  const renderUser: ListRenderItem<User> = ({ item }) => (
     <View style={styles.gamerData}>
-      <Image source={{ uri: item.games[0] }} style={styles.userImage} />
-      <Text style={styles.username}>{item.username}</Text>
-      <View style={styles.bio}>
-        <Text style={styles.gamesText}>Jogos</Text>
-        <View style={styles.games}>
-          {item.games.map((game, index) => (
-            <Image key={index} style={styles.gameImage} source={{ uri: game }} />
-          ))}
-        </View>
-        <Text style={styles.bioText}>{item.bioText}</Text>
+    <Image source={{ uri: item.games[0] }} style={styles.userImage} />
+    <Text style={styles.username}>{item.username}</Text>
+    <View style={styles.bio}>
+      <Text style={styles.gamesText}>Jogos</Text>
+      <View style={styles.games}>
+        {item.games.map((game, index) => (
+          <Image key={index} style={styles.gameImage} source={{ uri: game }} />
+        ))}
       </View>
-      <TouchableOpacity style={styles.invite}>
-        <Text style={styles.inviteText}>Convidar</Text>
-      </TouchableOpacity>
+      <Text style={styles.bioText}>{item.bioText}</Text>
     </View>
+    <TouchableOpacity style={styles.invite}>
+      <Text style={styles.inviteText}>Convidar</Text>
+    </TouchableOpacity>
+  </View>
   );
 
   return (

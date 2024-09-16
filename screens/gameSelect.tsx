@@ -3,6 +3,7 @@ import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image } from 'react-native';
 import Icon from "react-native-vector-icons/Feather"
+
 import { RootStackParamList } from '../navigation';
 
 // Defining the type of props

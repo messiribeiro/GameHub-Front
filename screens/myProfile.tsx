@@ -1,6 +1,7 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
+
 import { RootStackParamList } from '../navigation';
 
 // Defining the type of props
@@ -20,13 +21,13 @@ const MyProfile = ({ route, navigation }: Props) => {
   ];
 
   // Filter the games to only show the ones the user selected
-  const selectedGameDetails = games.filter(game => selectedGames.includes(game.id));
+  const selectedGameDetails = games.filter((game) => selectedGames.includes(game.id));
 
   return (
     <View style={styles.container}>
       {/* Banner */}
       <Image
-        source={require('../assets/banner.png')}  // replace with your banner image path
+        source={require('../assets/banner.png')} // replace with your banner image path
         style={styles.banner}
       />
 
@@ -48,12 +49,8 @@ const MyProfile = ({ route, navigation }: Props) => {
           {/* Settings Button */}
           <TouchableOpacity
             style={styles.settingsButton}
-            onPress={() => navigation.navigate('Settings')}
-          >
-            <Image
-              source={require('../assets/settings.png')}
-              style={styles.settingsIcon}
-            />
+            onPress={() => navigation.navigate('Settings')}>
+            <Image source={require('../assets/settings.png')} style={styles.settingsIcon} />
           </TouchableOpacity>
         </View>
       </View>
@@ -91,18 +88,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    paddingTop: 10,  // Add more space from the top
+    paddingTop: 10, // Add more space from the top
   },
   banner: {
     width: '100%',
     height: 150, // Height of the banner
-    resizeMode: 'cover',  // This keeps the image aspect ratio
+    resizeMode: 'cover', // This keeps the image aspect ratio
     marginBottom: 20, // Space between banner and form
   },
   profileHeader: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    marginBottom: 20,  // Space between profile and games grid
+    marginBottom: 20, // Space between profile and games grid
     alignItems: 'center',
   },
   profilePictureWrapper: {

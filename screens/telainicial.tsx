@@ -1,7 +1,8 @@
 /* eslint-disable prettier/prettier */
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; // Para os ícones
+ // Para os ícones
 
 const GameHubScreen = () => {
   return (
