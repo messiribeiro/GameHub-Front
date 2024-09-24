@@ -24,56 +24,13 @@ const SignUpStep3 = ({ navigation }: Props) => {
     }
 
     try {
-      // Recuperar dados do AsyncStorage
-      const username = await AsyncStorage.getItem('username');
-      const password = await AsyncStorage.getItem('userPassword');
+      // Save email to AsyncStorage
+      await AsyncStorage.setItem('userEmail', email);
 
-      if (!username || !password) {
-        Alert.alert('Erro', 'Dados de usuário não encontrados no armazenamento.');
-        return;
-      }
-
-      // Fazer a requisição para criar um novo usuário
-      const response = await api.post('/api/auth/signup', {
-        username,
-        email,
-        password,
-        profilePicture: 'https://example.com/default-profile-picture.jpg',
-        game: [1, 2, 3], // Adicione os jogos de interesse se necessário
-      });
-
-      if (response.status == 500) {
-        console.log(response);
-      }
-      if (response.status === 201) {
-        console.log('usuário cadastrado');
-        try {
-          const loginResponse = await api.post('/api/auth/login', {
-            email,
-            password,
-          });
-          console.log(email, password);
-          console.log(loginResponse);
-          if (loginResponse.status === 201) {
-            const { id } = loginResponse.data.data.user;
-
-            await AsyncStorage.setItem('userId', id.toString());
-
-            navigation.navigate('GameSelect');
-          } else {
-            Alert.alert('Erro', 'Falha ao fazer login após o cadastro.');
-          }
-        } catch (loginError) {
-          Alert.alert('Erro', 'Erro ao tentar fazer login.');
-          console.error(loginError);
-        }
-
-        navigation.navigate('GameSelect');
-      } else {
-        Alert.alert('Erro', 'Ocorreu um erro ao criar a conta.');
-      }
+      // Navigate to GameSelect
+      navigation.navigate('GameSelect');
     } catch (error) {
-      Alert.alert('Erro', 'Ocorreu um erro ao processar sua solicitação.');
+      Alert.alert('Erro', 'Erro ao processar sua solicitação.');
       console.error(error);
     }
   };

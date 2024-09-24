@@ -1,99 +1,101 @@
 import { StackScreenProps } from '@react-navigation/stack';
-import Header from 'components/Header';
-import TabMenu from 'components/TabMenu';
-import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+      import Header from 'components/Header';
+      import TabMenu from 'components/TabMenu';
+      import React from 'react';
+      import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+      import Icon from 'react-native-vector-icons/Feather';
 
-import { RootStackParamList } from '../navigation'; // Atualize o caminho conforme sua estrutura de pastas
+      import { RootStackParamList } from '../navigation'; // Atualize o caminho conforme sua estrutura de pastas
 
-// Definindo o tipo das props
-type Props = StackScreenProps<RootStackParamList, 'Home'>;
+      // Definindo o tipo das props
+      type Props = StackScreenProps<RootStackParamList, 'Home'>;
 
-interface Post {
-  id: string;
-  username: string;
-  caption: string;
-  imageUrl: string;
-  likes: number;
-  comments: number;
-  time: string;
-}
+      interface Post {
+        id: string;
+        username: string;
+        caption: string;
+        imageUrl: string;
+        likes: number;
+        comments: number;
+        time: string;
+      }
 
-const images = [
-  'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-  'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
-  'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
-];
+      const images = [
+        'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
+        'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
+        'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
+      ];
 
-const Home = ({ navigation }: Props) => {
-  const handleImagePress = (imageUrl: string) => {
-    // Navega para a tela FindGamer
-    navigation.navigate('FindGamer');
-  };
+      const Home = ({ navigation }: Props) => {
+        const handleImagePress = (imageUrl: string) => {
+          // Navega para a tela FindGamer
+          navigation.navigate('FindGamer');
+        };
 
-  return (
-    <>
-      <ScrollView style={styles.container}>
-        <Header />
+        return (
+          <>
+            <ScrollView style={styles.container}>
+               <Header navigation={navigation} />
 
-        <View style={styles.searchContainer}>
-          <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
-          <Icon name="search" size={24} color="#fff" />
-        </View>
-        <View style={styles.games}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-            {images.map((imageUrl, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => handleImagePress(imageUrl)} // Adiciona a função de clique
-                style={styles.imageContainer} // Adiciona um contêiner para definir o tamanho e o espaçamento das imagens
-              >
-                <Image source={{ uri: imageUrl }} style={styles.image} />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-        <View style={styles.postContainer}>
-          <View style={styles.post}>
-            <View style={styles.user}>
-              <Image
-                style={styles.userImage}
-                source={{
-                  uri: 'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-                }}
-              />
-              <Text style={styles.userName}>User1</Text>
-            </View>
-            <Text style={styles.postTitle}>Namoral não acredto que fiz isso</Text>
-            <Image
-              style={styles.postContent}
-              source={{
-                uri: 'https://cdn.mos.cms.futurecdn.net/csQgknvLgV4P4ABbFSZdrE.jpg',
-              }}
-            />
-            <View style={styles.dataView}>
-              <View style={styles.postData}>
-                <View style={styles.commentsAndLikes}>
-                  <Icon name="message-circle" size={24} color="#fff" />
-                  <Text style={styles.comments}>10</Text>
-                </View>
+              <View style={styles.searchContainer}>
+                <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
+                <Icon name="search" size={24} color="#fff" />
+              </View>
+              <View style={styles.games}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
+                  {images.map((imageUrl, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => handleImagePress(imageUrl)} // Adiciona a função de clique
+                      style={styles.imageContainer} // Adiciona um contêiner para definir o tamanho e o espaçamento das imagens
+                    >
+                      <Image source={{ uri: imageUrl }} style={styles.image} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+              <View style={styles.postContainer}>
+                <View style={styles.post}>
+                  <View style={styles.user}>
+                    <TouchableOpacity onPress={() => navigation.navigate('MyProfile')}>
+                      <Image
+                        style={styles.userImage}
+                        source={{
+                          uri: 'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
+                        }}
+                      />
+                    </TouchableOpacity>
+                    <Text style={styles.userName}>User1</Text>
+                  </View>
+                  <Text style={styles.postTitle}>Namoral não acredto que fiz isso</Text>
+                  <Image
+                    style={styles.postContent}
+                    source={{
+                      uri: 'https://cdn.mos.cms.futurecdn.net/csQgknvLgV4P4ABbFSZdrE.jpg',
+                    }}
+                  />
+                  <View style={styles.dataView}>
+                    <View style={styles.postData}>
+                      <View style={styles.commentsAndLikes}>
+                        <Icon name="message-circle" size={24} color="#fff" />
+                        <Text style={styles.comments}>10</Text>
+                      </View>
 
-                <View style={styles.commentsAndLikes}>
-                  <Icon name="heart" size={18} color="#fff" />
-                  <Text style={styles.likes}>20</Text>
+                      <View style={styles.commentsAndLikes}>
+                        <Icon name="heart" size={18} color="#fff" />
+                        <Text style={styles.likes}>20</Text>
+                      </View>
+                    </View>
+
+                    <View>
+                      <Text style={styles.time}>Há 5h</Text>
+                    </View>
+                  </View>
                 </View>
               </View>
-
-              <View>
-                <Text style={styles.time}>Há 5h</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      </ScrollView>
-      <TabMenu />
-    </>
+            </ScrollView>
+            <TabMenu />
+          </>
   );
 };
 
