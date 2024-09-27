@@ -39,7 +39,7 @@ const SignUpStep3 = ({ navigation }: Props) => {
         email,
         password,
         profilePicture: 'https://example.com/default-profile-picture.jpg',
-        game: [1, 2, 3], // Adicione os jogos de interesse se necessário
+        games: [1, 2, 3], // Adicione os jogos de interesse se necessário
       });
 
       if (response.status == 500) {

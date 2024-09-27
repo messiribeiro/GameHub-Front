@@ -35,8 +35,8 @@ const users: User[] = [
   },
   {
     id: '2',
-    username: '@gamer2',
-    bioText: 'Vamos jogar juntos!',
+    username: '@mateus',
+    bioText: 'bora jogar junto',
     games: [
       'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
       'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
@@ -45,8 +45,8 @@ const users: User[] = [
   },
   {
     id: '3',
-    username: '@gamer2',
-    bioText: 'Vamos jogar juntos!',
+    username: '@carlin',
+    bioText: 'mano só quero alguém pra jogar',
     games: [
       'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
       'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
@@ -55,18 +55,17 @@ const users: User[] = [
   },
   {
     id: '4',
-    username: '@gamer2',
-    bioText: 'Vamos jogar juntos!',
+    username: '@strend',
+    bioText: 'bora um duo',
     games: [
-      'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
       'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
       'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
     ],
   },
   {
     id: '5',
-    username: '@gamer2',
-    bioText: 'Vamos jogar juntos!',
+    username: '@hopes',
+    bioText: 'chama dm',
     games: [
       'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
       'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
@@ -75,12 +74,11 @@ const users: User[] = [
   },
   {
     id: '6',
-    username: '@gamer2',
-    bioText: 'Vamos jogar juntos!',
+    username: '@vitin',
+    bioText: 'alguém pra jogar??',
     games: [
       'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
       'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-      'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
     ],
   },
   // Adicione mais usuários aqui

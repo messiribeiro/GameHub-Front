@@ -22,9 +22,9 @@ export type RootStackParamList = {
   SignupStep2: undefined;
   SignupStep3: undefined;
   GameSelect: undefined;
-  Profile: { selectedGames: string[] };
+  Profile: undefined;
   Settings: undefined;
-  MyProfile: { selectedGames: string[] };
+  MyProfile: undefined;
   Home: undefined;
   FindGamer: undefined;
 
