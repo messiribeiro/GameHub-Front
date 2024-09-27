@@ -2,11 +2,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import Chat from 'screens/chat';
 import FindGamer from 'screens/findGamer';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
 import Profile from 'screens/profile';
+
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
@@ -26,7 +28,7 @@ export type RootStackParamList = {
   MyProfile: undefined;
   Home: undefined;
   FindGamer: undefined;
-
+  Chat: undefined;
 
 
 };
@@ -40,7 +42,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="Chat">
         <Stack.Screen
           name="Login"
           component={Login}
@@ -87,6 +89,13 @@ export default function RootStack() {
           component={FindGamer}
           options={{ headerShown: false }}
         />
+
+        <Stack.Screen
+          name="Chat"
+          component={Chat}
+          options={{ headerShown: false }}
+        />
+        
 
       </Stack.Navigator>
     </NavigationContainer>

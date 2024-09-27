@@ -2,7 +2,7 @@
 import { StackNavigationProp } from '@react-navigation/stack';
 import Header from 'components/Header';
 import TabMenu from 'components/TabMenu';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,134 +11,93 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
-  ListRenderItem 
+  ListRenderItem
 } from 'react-native';
-
+import api from 'services/api'; // Importa a instância configurada do axios
 
 const { height } = Dimensions.get('window');
 
+// Tipos de dados
+interface Game {
+  id: number;
+  name: string;
+  description: string | null;
+}
+
+interface GameUser {
+  gameId: number;
+  userId: number;
+  game: Game;
+}
+
 interface User {
-  id: string;
+  id: number;
   username: string;
-  bioText: string;
-  games: string[];
-}
-interface FindGamerProps {
-  navigation: StackNavigationProp<any>;
+  profilePictureUrl: string;
+  GameUser: GameUser[];
 }
 
-const users: User[] = [
-  {
-    id: '1',
-    username: '@joazin',
-    bioText: 'Procuro alguém pra jogar, estou entrando em depressão',
-    games: [
-      'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-      'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
-      'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
-    ],
-  },
-  {
-    id: '2',
-    username: '@mateus',
-    bioText: 'bora jogar junto',
-    games: [
-      'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
-      'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-      'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
-    ],
-  },
-  {
-    id: '3',
-    username: '@carlin',
-    bioText: 'mano só quero alguém pra jogar',
-    games: [
-      'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
-      'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-      'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
-    ],
-  },
-  {
-    id: '4',
-    username: '@strend',
-    bioText: 'bora um duo',
-    games: [
-      'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
-      'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-    ],
-  },
-  {
-    id: '5',
-    username: '@hopes',
-    bioText: 'chama dm',
-    games: [
-      'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
-      'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
-      'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-    ],
-  },
-  {
-    id: '6',
-    username: '@vitin',
-    bioText: 'alguém pra jogar??',
-    games: [
-      'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
-      'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-    ],
-  },
-  // Adicione mais usuários aqui
-];
-
-const FindGamer: React.FC<FindGamerProps> = ({ navigation }) => {
+const FindGamer: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([]);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
 
-  const handleSwipeDown = () => {
-    if (currentUserIndex < users.length - 1) {
-      setCurrentUserIndex(currentUserIndex + 1);
+  // Função para buscar dados da API
+  const fetchUsers = async () => {
+    try {
+      const response = await api.get('https://gamehub-back-6h0k.onrender.com/api/user-game-interests/36/find-similar-games');
+      const data = response.data;
+
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else {
+        console.error('A resposta da API não é uma array:', data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   const renderUser: ListRenderItem<User> = ({ item }) => (
     <View style={styles.gamerData}>
-    <Image source={{ uri: item.games[0] }} style={styles.userImage} />
-    <Text style={styles.username}>{item.username}</Text>
-    <View style={styles.bio}>
-      <Text style={styles.gamesText}>Jogos</Text>
-      <View style={styles.games}>
-        {item.games.map((game, index) => (
-          <Image key={index} style={styles.gameImage} source={{ uri: game }} />
-        ))}
+      <Image source={{ uri: item.profilePictureUrl }} style={styles.userImage} />
+      <Text style={styles.username}>{item.username}</Text>
+      <View style={styles.bio}>
+        <Text style={styles.gamesText}>Jogos</Text>
+        <View style={styles.games}>
+          {item.GameUser.map((gameUser, index) => (
+            <Text key={index} style={styles.gameText}>{gameUser.game.name}</Text>
+          ))}
+        </View>
       </View>
-      <Text style={styles.bioText}>{item.bioText}</Text>
+      <TouchableOpacity style={styles.invite}>
+        <Text style={styles.inviteText}>Convidar</Text>
+      </TouchableOpacity>
     </View>
-    <TouchableOpacity style={styles.invite}>
-      <Text style={styles.inviteText}>Convidar</Text>
-    </TouchableOpacity>
-  </View>
   );
 
   return (
-    <>
-      <View style={styles.container}>
-        <Header navigation={navigation} />
-        <FlatList
-          data={users}
-          renderItem={renderUser}
-          keyExtractor={(item) => item.id}
-          initialScrollIndex={currentUserIndex}
-          getItemLayout={(data, index) => ({ length: height, offset: height * index, index })}
-          onMomentumScrollEnd={(event) => {
-            const index = Math.floor(event.nativeEvent.contentOffset.y / height);
-            setCurrentUserIndex(index);
-          }}
-          showsVerticalScrollIndicator={false}
-          snapToInterval={height} // Define a altura do snap
-          snapToAlignment="start"
-          decelerationRate="fast"
-          style={{ flex: 1 }}
-        />
-      </View>
-      <TabMenu />
-    </>
+    <View style={styles.container}>
+      <FlatList
+        data={users}
+        renderItem={renderUser}
+        keyExtractor={(item) => item.id.toString()}
+        initialScrollIndex={currentUserIndex}
+        getItemLayout={(data, index) => ({ length: height, offset: height * index, index })}
+        onMomentumScrollEnd={(event) => {
+          const index = Math.floor(event.nativeEvent.contentOffset.y / height);
+          setCurrentUserIndex(index);
+        }}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={height}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        style={{ flex: 1 }}
+      />
+    </View>
   );
 };
 
@@ -180,21 +139,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
   },
-  gameImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-  },
-  bioText: {
+  gameText: {
     color: 'white',
-    marginTop: 15,
-    fontSize: 14,
-    fontWeight: '300',
-  },
-  games: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: 10,
     marginTop: 10,
   },
   invite: {
@@ -210,6 +156,7 @@ const styles = StyleSheet.create({
   inviteText: {
     color: 'white',
   },
+  games: {}
 });
 
 export default FindGamer;
