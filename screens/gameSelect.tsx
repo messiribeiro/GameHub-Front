@@ -7,6 +7,7 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image, A
 import Icon from "react-native-vector-icons/Feather";
 
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 // Definindo o tipo das props
 type Props = StackScreenProps<RootStackParamList, 'GameSelect'>;
@@ -63,23 +64,32 @@ const GameSelect = ({ navigation }: Props) => {
     }
   };
 
-  // Salva os jogos selecionados e atualiza os dados do usuário
-  const handleSave = async () => {
-    if (userId) {
-      try {
-        // Salva os jogos selecionados no AsyncStorage
-        await AsyncStorage.setItem(`selectedGames_${userId}`, JSON.stringify(selectedGames));
 
-        // Navega para a próxima tela
-        navigation.navigate('Home'); 
+
+    const handleSave = async () => {
+      try {
+        const userResponse = await api.post('/api/auth/signup', {
+          username: 'testUser',
+          email: 'test@example.com',
+          password: 'password123',
+          profilePicture: null,
+          game: [1, 2], // Example game IDs
+        });
+
+        console.log('API Response:', userResponse);
+
+        if (userResponse.status === 201) {
+          navigation.navigate('Home');
+        } else {
+          Alert.alert('Erro', 'Não foi possível criar o usuário.');
+        }
       } catch (error) {
-        console.error('Failed to save selected games:', error);
-        Alert.alert('Erro', 'Não foi possível salvar os jogos selecionados.');
+        console.error('API Error:', error);
+        Alert.alert('Erro', 'Erro ao processar sua solicitação.');
       }
-    } else {
-      Alert.alert('Erro', 'Usuário não encontrado.');
-    }
-  };
+    };
+
+
 
   return (
     <View style={styles.container}>

@@ -35,7 +35,7 @@ const Home = ({ navigation }: Props) => {
   return (
     <>
       <ScrollView style={styles.container}>
-        <Header />
+        <Header navigation={navigation} />
 
         <View style={styles.searchContainer}>
           <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
@@ -57,12 +57,14 @@ const Home = ({ navigation }: Props) => {
         <View style={styles.postContainer}>
           <View style={styles.post}>
             <View style={styles.user}>
-              <Image
-                style={styles.userImage}
-                source={{
-                  uri: 'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
-                }}
-              />
+              <TouchableOpacity onPress={() => navigation.navigate('MyProfile')}>
+                <Image
+                  style={styles.userImage}
+                  source={{
+                    uri: 'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
+                  }}
+                />
+              </TouchableOpacity>
               <Text style={styles.userName}>User1</Text>
             </View>
             <Text style={styles.postTitle}>Namoral não acredto que fiz isso</Text>

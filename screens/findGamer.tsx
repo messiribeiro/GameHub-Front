@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { StackNavigationProp } from '@react-navigation/stack';
 import Header from 'components/Header';
 import TabMenu from 'components/TabMenu';
 import React, { useState } from 'react';
@@ -13,6 +14,7 @@ import {
   ListRenderItem 
 } from 'react-native';
 
+
 const { height } = Dimensions.get('window');
 
 interface User {
@@ -20,6 +22,9 @@ interface User {
   username: string;
   bioText: string;
   games: string[];
+}
+interface FindGamerProps {
+  navigation: StackNavigationProp<any>;
 }
 
 const users: User[] = [
@@ -84,7 +89,7 @@ const users: User[] = [
   // Adicione mais usuários aqui
 ];
 
-const FindGamer = () => {
+const FindGamer: React.FC<FindGamerProps> = ({ navigation }) => {
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
 
   const handleSwipeDown = () => {
@@ -114,7 +119,7 @@ const FindGamer = () => {
   return (
     <>
       <View style={styles.container}>
-        <Header />
+        <Header navigation={navigation} />
         <FlatList
           data={users}
           renderItem={renderUser}
