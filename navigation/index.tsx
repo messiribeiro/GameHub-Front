@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Chat from 'screens/chat';
+import ChatWindow from 'screens/chatWindow';
 import FindGamer from 'screens/findGamer';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
@@ -13,6 +14,8 @@ import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
 import SignupStep3 from '../screens/signupStep3';
+
+
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -29,6 +32,7 @@ export type RootStackParamList = {
   Home: undefined;
   FindGamer: undefined;
   Chat: undefined;
+  ChatWindow: undefined;
 
 
 };
@@ -42,7 +46,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Chat">
+      <Stack.Navigator initialRouteName="ChatWindow">
         <Stack.Screen
           name="Login"
           component={Login}
@@ -91,10 +95,17 @@ export default function RootStack() {
         />
 
         <Stack.Screen
+          name="ChatWindow"
+          component={ChatWindow}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
           name="Chat"
           component={Chat}
           options={{ headerShown: false }}
         />
+        
         
 
       </Stack.Navigator>
