@@ -109,7 +109,10 @@ const styles = StyleSheet.create({
 
   },
   username: {
-    color: "white"
+    color: "white",
+    width: 100,
+    textAlign: "center",
+    marginTop: 5,
   },
   buttonsContainer: {
     flexDirection: "row",
@@ -140,7 +143,7 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
     height: "8%",
-    marginTop: 10,
+    marginTop: 30,
   },
   followerInformation: {
     marginTop: 15,

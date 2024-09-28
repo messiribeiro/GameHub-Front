@@ -67,7 +67,7 @@ const Home = ({ navigation }: Props) => {
               </TouchableOpacity>
               <Text style={styles.userName}>User1</Text>
             </View>
-            <Text style={styles.postTitle}>Namoral não acredto que fiz isso</Text>
+            <Text style={styles.postTitle}>Namoral não acredito que fiz isso</Text>
             <Image
               style={styles.postContent}
               source={{
