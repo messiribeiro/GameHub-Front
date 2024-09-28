@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { StackNavigationProp } from '@react-navigation/stack';
+import { StackScreenProps } from '@react-navigation/stack';
 import Header from 'components/Header';
 import TabMenu from 'components/TabMenu';
 import React, { useState, useEffect } from 'react';
@@ -14,6 +14,8 @@ import {
   ListRenderItem
 } from 'react-native';
 import api from 'services/api'; // Importa a instância configurada do axios
+
+import { RootStackParamList } from '../navigation';
 
 const { height } = Dimensions.get('window');
 
@@ -36,8 +38,9 @@ interface User {
   profilePictureUrl: string;
   GameUser: GameUser[];
 }
+type Props = StackScreenProps<RootStackParamList, 'FindGamer'>;
 
-const FindGamer: React.FC = () => {
+const FindGamer = ({ navigation }: Props) => {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
 
@@ -73,7 +76,9 @@ const FindGamer: React.FC = () => {
           ))}
         </View>
       </View>
-      <TouchableOpacity style={styles.invite}>
+      <TouchableOpacity style={styles.invite} onPress={() => {
+        navigation.navigate("Profile", { profileUserId: item.id.toString() })
+      }} >
         <Text style={styles.inviteText}>Convidar</Text>
       </TouchableOpacity>
     </View>

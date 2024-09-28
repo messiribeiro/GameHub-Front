@@ -5,7 +5,7 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
-import { RootStackParamList } from '../navigation'; // Atualize o caminho conforme sua estrutura de pastas
+import { RootStackParamList } from '../navigation';
 
 // Definindo o tipo das props
 type Props = StackScreenProps<RootStackParamList, 'Home'>;
