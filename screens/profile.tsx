@@ -1,7 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { StackScreenProps } from '@react-navigation/stack';
+import TabMenu from 'components/TabMenu';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, FlatList, Image } from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
 
 import { RootStackParamList } from '../navigation';
 
@@ -9,100 +11,50 @@ import { RootStackParamList } from '../navigation';
 // Defining the type of props
 type Props = StackScreenProps<RootStackParamList, 'Profile'>;
 
-const Profile = ({ route, navigation }: Props) => {
-  const { selectedGames } = route.params;
-
-  const [isFollowing, setIsFollowing] = useState(false); // Initialize state
-
-  const toggleFollow = async () => {
-    const newFollowState = !isFollowing;
-    setIsFollowing(newFollowState);
-
-    // Example API call
-    try {
-      await fetch('https://your-api-endpoint.com/follow', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isFollowing: newFollowState }),
-      });
-    } catch (error) {
-      console.error('Error updating follow status:', error);
-    }
-  };
+const Profile = ({ navigation }: Props) => {
 
 
-  const games = [
-    { id: '1', name: 'Fortnite', icon: require('../assets/gameIcons/fortnite.png') },
-    { id: '2', name: 'GTAV', icon: require('../assets/gameIcons/gtaV.png') },
-    { id: '3', name: 'Counter-Strike 2', icon: require('../assets/gameIcons/cs2.png') },
-    { id: '4', name: 'Valorant', icon: require('../assets/gameIcons/valorant.png') },
-    { id: '5', name: 'Minecraft', icon: require('../assets/gameIcons/minecraft.png') },
-    { id: '6', name: 'League of Legends', icon: require('../assets/gameIcons/lol.png') },
-    // Add more games here
-  ];
+ 
 
-  // Filter the games to only show the ones the user selected
-  const selectedGameDetails = games.filter(game => selectedGames.includes(game.id));
-
-  // Inside your Profile component
   return (
     <View style={styles.container}>
-      {/* Banner */}
-      <Image
-        source={require('../assets/banner.png')}  // replace with your banner image path
-        style={styles.banner}
-      />
-
-      {/* Profile Header */}
-      <View style={styles.profileHeader}>
-        <View style={styles.profilePictureWrapper}>
-          <View style={styles.profilePicturePlaceholder} />
+      <View style={styles.banner}>
+        <Image source={{ uri: "https://s3.static.brasilescola.uol.com.br/be/2023/09/1-escudo-do-corinthians.jpg" }} style={styles.bannerImage} />
+      </View>
+      <View style={styles.userProfileActionsView}>
+        <View style={styles.userData}>
+          <Image source={{ uri: "https://img.a.transfermarkt.technology/portrait/big/489893-1720056861.jpg?lm=1" }} style={styles.userImage} />
+          <Text style={styles.username}>@joazin</Text>
         </View>
-        <View style={styles.profileDetails}>
-          <Text style={styles.username}>@user1</Text>
-          <Text style={styles.bio}>Edite o perfil para colocar uma mensagem de status</Text>
-          <View style={styles.statsContainer}>
-            <Text style={styles.stat}>32 seguindo</Text>
-            <Text style={styles.stat}>5 seguidores</Text>
-            <Text style={styles.stat}>45 Publicações</Text>
+        <View style={styles.buttonsContainer}>
+          <View style={styles.followButton}>
+            <Text style={styles.text}>seguir</Text>
+          </View>
+          <View style={styles.messageButton}>
+            <Icon name="mail" size={24} color="#fff" />
+
           </View>
         </View>
-        <View style={styles.actions}>
-          <TouchableOpacity style={styles.followButton} onPress={toggleFollow}>
-            <Text style={styles.followButtonText}>
-                {isFollowing ? 'seguindo' : 'seguir'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Selected Games Grid */}
-      <FlatList
-        data={selectedGameDetails}
-        keyExtractor={(item) => item.id}
-        numColumns={3}
-        renderItem={({ item }) => (
-          <View style={styles.gameIconContainer}>
-            <Image source={item.icon} style={styles.gameIcon} />
+        
+      
+      </View> 
+      <View style={styles.profileData} >
+          <Text style={styles.bio}>
+            consigo jogar das 22h até às 3h da manhã.. só chamar dm. Jogo fortnite muito bem.. Vem x1 seu bot
+          </Text>
+          <View style={styles.followerInformation}>
+            <Text style={styles.followerText}>32 seguindo</Text>
+            <Text style={styles.followerText}>5 seguidores</Text>
+            <Text style={styles.followerText}>45 Publicações</Text>
           </View>
-        )}
-        style={styles.gameGrid}
-      />
-
-      {/* Footer with icons */}
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text>🚫</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text>➕</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.footerButton}>
-          <Text>📧</Text>
-        </TouchableOpacity>
       </View>
+      <View style={styles.line}/>
+      <View style={styles.posts}>
+        <Text style={styles.messageText}>@joazin ainda não fez uma publicação</Text>
+      </View>
+      <TabMenu />
+
+      
     </View>
   );
 };
@@ -111,102 +63,96 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    paddingTop: 10,  // Add more space from the top
   },
   banner: {
     width: '100%',
-    height: 150, // Height of the banner
-    resizeMode: 'cover',  // This keeps the image aspect ratio
-    marginBottom: 20, // Space between banner and form
+    resizeMode: 'cover',  
+    height: "20%",
   },
-  profileHeader: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    marginBottom: 20,  // Space between profile and games grid
-    alignItems: 'center',
+  bannerImage: {
+    width: "100%",
+    height: "100%"
   },
-  profilePictureWrapper: {
-    position: 'absolute',
-    top: -50,
-    left: 20, // Space from the left edge
-    width: 80,
-    height: 80,
+  userProfileActionsView: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 10,
+    height: "8%",
   },
-  profilePicturePlaceholder: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#333',
-    borderRadius: 40,
-    borderWidth: 4,
-    borderColor: '#121212', // Border color matches the background
+  userData: {
+    alignItems: "center",
+    top: -65,
+
   },
-  profileDetails: {
-    flex: 1,
-    marginLeft: 20,
-    paddingTop: 30, // Space to push content below the profile picture
+  userImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: "#5312C2",
+
   },
   username: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: "white"
   },
-  bio: {
-    color: '#aaa',
-    marginTop: 5,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    marginTop: 10,
-  },
-  stat: {
-    color: '#aaa',
-    marginRight: 15,
-  },
-  actions: {
-    flexDirection: 'row',
-    position: 'absolute',
-    top: -10, // Adjust this to be just below the banner
-    right: 20, // Space from the right edge
-    alignItems: 'center',
+  buttonsContainer: {
+    flexDirection: "row",
+    gap: 5,    
   },
   followButton: {
-    backgroundColor: '#512DA8',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 5,
-    marginBottom: 5,
+    width: 100,
+    height: 40,
+    backgroundColor: "#5312C2",
+    borderRadius: 7,
+    alignItems: "center",
+    justifyContent: "center"
   },
-  followButtonText: {
-    color: '#fff',
+  messageButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: "#5312C2",
+    borderRadius: 7,
+    alignItems: "center",
+    justifyContent: "center"
   },
-
-  gameGrid: {
-    padding: 10,
+  text: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500"
   },
-  gameIconContainer: {
-    flex: 1,
-    margin: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1c1c1c',
-    padding: 10,
-    borderRadius: 5,
+  profileData: {
+    paddingLeft: 15,
+    paddingRight: 15,
+    height: "8%",
+    marginTop: 10,
   },
-  gameIcon: {
-    width: 60,
-    height: 60,
+  followerInformation: {
+    marginTop: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#333',
-    backgroundColor: '#1c1c1c',
+  bio: {
+    color: "white",
   },
-  footerButton: {
-    padding: 10,
+  followerText: {
+    color: "white",
+    fontSize: 13,
   },
+  line: {
+    width: "100%",
+    height: 1,
+    backgroundColor: "#FFFFFF",
+    opacity: 0.19,
+    marginTop: 15,
+  },
+  posts: {
+    height: "40%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  messageText: {
+    color: "white",
+  }
 });
 
 

@@ -46,7 +46,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="ChatWindow">
+      <Stack.Navigator initialRouteName="Profile">
         <Stack.Screen
           name="Login"
           component={Login}
