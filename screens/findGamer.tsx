@@ -24,6 +24,7 @@ const { height } = Dimensions.get('window');
 interface Game {
   id: number;
   name: string;
+  gameimageUrl: string; 
   description: string | null;
 }
 
@@ -91,7 +92,7 @@ const FindGamer = ({ navigation }: Props) => {
         <Text style={styles.gamesText}>Jogos</Text>
         <View style={styles.games}>
           {item.GameUser.map((gameUser, index) => (
-            <Text key={index} style={styles.gameText}>{gameUser.game.name}</Text>
+            <Image key={index} source={{ uri: gameUser.game.gameimageUrl }} style={styles.gameImage} />
           ))}
         </View>
       </View>
@@ -180,7 +181,16 @@ const styles = StyleSheet.create({
   inviteText: {
     color: 'white',
   },
-  games: {}
+  games: {
+    flexDirection: "row",
+    gap: 5,
+    marginTop: 5,
+  },
+  gameImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 5
+  }
 });
 
 export default FindGamer;
