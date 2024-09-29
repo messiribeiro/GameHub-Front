@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
@@ -11,6 +11,17 @@ type Props = StackScreenProps<RootStackParamList, 'SignupStep3'>;
 
 const SignUpStep3 = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('useId');
+      if (token) {
+        navigation.replace('Home');
+      }
+    };
+
+    checkLoginStatus();
+  }, [navigation]);
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

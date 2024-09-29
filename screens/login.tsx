@@ -2,7 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
@@ -13,6 +13,19 @@ type Props = StackScreenProps<RootStackParamList, 'Login'>;
 const LoginScreen = ({ navigation }: Props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('useId');
+      if (token) {
+        
+        navigation.replace('Home');
+      }
+    };
+    
+    checkLoginStatus();
+  }, [navigation]);
+
 
  const handleLogin = async () => {
    if (!username || !password) {

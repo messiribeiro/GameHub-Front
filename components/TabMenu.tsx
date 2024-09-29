@@ -1,17 +1,29 @@
+import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
-const TabMenu = () => {
+type Props = {
+  navigation: StackNavigationProp<any>;
+};
+
+const TabMenu: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
-      <Icon name="compass" size={26} color="#000000" />
-      <Icon name="plus-circle" size={26} color="#000000" />
-      <Icon name="mail" size={26} color="#000000" />
+      <TouchableOpacity>
+        <Icon name="compass" size={26} color="#000000" />
+      </TouchableOpacity>
+
+      <TouchableOpacity>
+        <Icon name="plus-circle" size={26} color="#000000" />
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Chat')}>
+        <Icon name="mail" size={26} color="#000000" />
+      </TouchableOpacity>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     width: 160,

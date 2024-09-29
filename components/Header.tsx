@@ -1,19 +1,37 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-
+import api from 'services/api';
 type Props = {
   navigation: StackNavigationProp<any>;
 };
 
+interface UserData {
+  profilePictureUrl: string;
+}
+
 const Header: React.FC<Props> = ({ navigation }) => {
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const getUserData = async () => {
+      const userId = await AsyncStorage.getItem('userId');
+      if (userId) {
+        const response = await api.get(`api/users/${userId}`);
+        setUserData(response.data);
+      }
+    };
+    getUserData();
+  }, []);
+
   return (
     <View style={styles.header}>
       <TouchableOpacity onPress={() => navigation.navigate('MyProfile')}>
         <Image
           style={styles.userImage}
           source={{
-            uri: 'https://i.natgeofe.com/n/4f5aaece-3300-41a4-b2a8-ed2708a0a27c/domestic-dog_thumb_square.jpg',
+            uri: userData?.profilePictureUrl,
           }}
         />
       </TouchableOpacity>

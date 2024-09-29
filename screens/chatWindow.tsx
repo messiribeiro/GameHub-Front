@@ -1,15 +1,30 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-unused-expressions */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Feather';
+import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
 
 type Props = StackScreenProps<RootStackParamList, 'ChatWindow'>;
 
-const ChatWindow = ({ navigation }: Props) => {
+interface Message {
+  id: number;
+  content: string;
+  senderId: number;
+  receiverId: number;
+  createdAt: Date;
+  conversationId: number;
+}
+
+const ChatWindow = ({ navigation, route }: Props) => {
+  const { receiverId } = route.params;
+  const [userId, setUseriD] = useState<string | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [messages, setMessages] = useState<{ text: string; time: string; imageUri?: string }[]>([]);
   const [receivedMessages, setReceivedMessages] = useState<
@@ -19,6 +34,15 @@ const ChatWindow = ({ navigation }: Props) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [contentHeight, setContentHeight] = useState(0);
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  const [oldMessages, setOldMessages] = useState<Message[]>([]);
+
+
+  useEffect(() => {
+    (async () => {
+      const id = await AsyncStorage.getItem('userId');
+      setUseriD(id);
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -29,14 +53,29 @@ const ChatWindow = ({ navigation }: Props) => {
     })();
   }, []);
 
+
   useEffect(() => {
-    const newReceivedMessage = {
-      text: 'Oi, quer jogar comigo?',
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      imageUri: undefined,
+    const getAllMessages = async () => {
+      if (userId) {
+        try {
+          const response = await api.get(`api/chat/messages/${userId}/${receiverId}`);
+          console.log("testando");
+          
+          // Atualiza o estado com as mensagens retornadas
+          setOldMessages(response.data.messages);
+  
+          // Exibe as mensagens no console
+          response.data.messages.forEach((message: Message) => {
+            console.log(message);
+          });
+        } catch (error) {
+          console.error('Erro ao buscar mensagens:', error);
+        }
+      }
     };
-    setReceivedMessages((prevMessages) => [...prevMessages, newReceivedMessage]);
-  }, []);
+  
+    getAllMessages();
+  }, [userId, receiverId]);
 
   const handleCameraPress = async () => {
     const result = await ImagePicker.launchCameraAsync();
@@ -60,6 +99,23 @@ const ChatWindow = ({ navigation }: Props) => {
       setMessages((prevMessages) => [...prevMessages, newMessage]);
       setInputValue('');
       scrollToBottom();
+
+      const apiConnection = async () => {
+        try {
+          const response = await api.post('api/chat/send', {
+            senderId: Number(userId),
+            receiverId: Number(receiverId),
+            content: inputValue,
+          });
+          console.log(response.data);
+        } catch (err) {
+          console.error('Erro ao enviar mensagem:', err);
+
+          return null;
+        }
+      };
+
+      apiConnection();
     }
   };
 
@@ -89,8 +145,37 @@ const ChatWindow = ({ navigation }: Props) => {
         style={styles.messages}
         onContentSizeChange={handleContentSizeChange}
         onScroll={handleScroll}
-        scrollEventThrottle={16} // Ajuste para controlar a frequência do evento de scroll
+        scrollEventThrottle={16}
       >
+
+      {
+        oldMessages.map((message) => {
+          const createdAt = new Date(message.createdAt); // Converter para Date
+          if (String(message.senderId) === String(userId)) {
+            return (
+              <View key={message.id} style={styles.sentContainer}>
+                <View style={styles.sentMessage}>
+                  <Text style={styles.messageText}>{message.content}</Text>
+                </View>
+                <Text style={styles.timeTextSent}>
+                  {createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </View>
+            );
+          } else {
+            return (
+              <View key={message.id} style={styles.receivedContainer}>
+                <View style={styles.receivedMessage}>
+                  <Text style={styles.messageText}>{message.content}</Text>
+                </View>
+                <Text style={styles.timeTextReceived}>
+                  {createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </Text>
+              </View>
+            );
+          }
+        })
+      }
         {receivedMessages.map((message, index) => (
           <View key={index} style={styles.receivedContainer}>
             {message.imageUri && (

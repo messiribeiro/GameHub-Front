@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
@@ -11,6 +11,18 @@ type Props = StackScreenProps<RootStackParamList, 'SignupStep1'>;
 
 const SignUpStep1 = ({ navigation }: Props) => {
   const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('useId');
+      if (token) {
+        
+        navigation.replace('Home');
+      }
+    };
+    
+    checkLoginStatus();
+  }, [navigation]);
 
   const handleNext = async () => {
     if (username) { // Verifica se o campo não está vazio

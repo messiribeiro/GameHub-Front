@@ -68,7 +68,8 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
       <View style={styles.posts}>
         <Text style={styles.messageText}>@{userData ? userData.username : "..."} ainda não fez uma publicação</Text>
       </View>
-      <TabMenu />
+      <TabMenu navigation={navigation} />
+
 
       
     </View>

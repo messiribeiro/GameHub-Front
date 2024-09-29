@@ -28,7 +28,6 @@ const images = [
 
 const Home = ({ navigation }: Props) => {
   const handleImagePress = (imageUrl: string) => {
-    // Navega para a tela FindGamer
     navigation.navigate('FindGamer');
   };
 
@@ -94,7 +93,7 @@ const Home = ({ navigation }: Props) => {
           </View>
         </View>
       </ScrollView>
-      <TabMenu />
+      <TabMenu navigation={navigation} />
     </>
   );
 };

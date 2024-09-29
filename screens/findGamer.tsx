@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import Header from 'components/Header';
 import TabMenu from 'components/TabMenu';
@@ -43,11 +44,27 @@ type Props = StackScreenProps<RootStackParamList, 'FindGamer'>;
 const FindGamer = ({ navigation }: Props) => {
   const [users, setUsers] = useState<User[]>([]);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getUserId = async () => {
+      const id = await AsyncStorage.getItem("userId");
+      setUserId(id);
+      console.log("userId após a atualização:", id); // Aqui, você verá o valor atualizado
+    };
+    getUserId();
+  }, []);
 
   // Função para buscar dados da API
   const fetchUsers = async () => {
+    if (!userId) {
+      console.error('userId é null ou undefined');
+      return; // Retorna se userId não for válido
+    }
+    
     try {
-      const response = await api.get('https://gamehub-back-6h0k.onrender.com/api/user-game-interests/36/find-similar-games');
+      console.log("teste", userId); // Verifique se userId está correto
+      const response = await api.get(`api/user-game-interests/similar-games/${userId}`);
       const data = response.data;
 
       if (Array.isArray(data)) {
@@ -61,8 +78,10 @@ const FindGamer = ({ navigation }: Props) => {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (userId) {
+      fetchUsers();
+    }
+  }, [userId]);
 
   const renderUser: ListRenderItem<User> = ({ item }) => (
     <View style={styles.gamerData}>
@@ -77,7 +96,7 @@ const FindGamer = ({ navigation }: Props) => {
         </View>
       </View>
       <TouchableOpacity style={styles.invite} onPress={() => {
-        navigation.navigate("Profile", { profileUserId: item.id.toString() })
+        navigation.navigate("ChatWindow", { receiverId: item.id })
       }} >
         <Text style={styles.inviteText}>Convidar</Text>
       </TouchableOpacity>

@@ -12,26 +12,35 @@ import { RootStackParamList } from '../navigation';
 interface UserData {
   id: number;
   username: string;
+  profilePictureUrl: string;
+}
+
+interface UserStats {
+  followersCount: number;
+  followingCount: number;
 }
 
 // Defining the type of props
 type Props = StackScreenProps<RootStackParamList, 'MyProfile'>;
 
-
 const MyProfile: React.FC<Props> = ({ navigation }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
 
-  useEffect(()=>{
+  useEffect(() => {
     const getUserData = async () => {
-    const profileUserId = await AsyncStorage.getItem("userId"); 
+      const profileUserId = await AsyncStorage.getItem("userId");
 
       console.log(profileUserId);
-      setUserData((await api.get(`api/users/${profileUserId}`)).data); 
-      
-    }
+      const userResponse = await api.get(`api/users/${profileUserId}`);
+      setUserData(userResponse.data);
+
+      // Fetch user stats
+      const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
+      setUserStats(statsResponse.data);
+    };
     getUserData();
-  },[])
-  
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -40,38 +49,30 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
       </View>
       <View style={styles.userProfileActionsView}>
         <View style={styles.userData}>
-          <Image source={{ uri: "https://img.a.transfermarkt.technology/portrait/big/489893-1720056861.jpg?lm=1" }} style={styles.userImage} />
+          <Image source={{ uri: userData?.profilePictureUrl }} style={styles.userImage} />
           <Text style={styles.username}>@{userData ? userData.username : "user"}</Text>
         </View>
         <View style={styles.buttonsContainer}>
-          <View style={styles.followButton}>
-            <Text style={styles.text}>seguir</Text>
-          </View>
-          <View style={styles.messageButton}>
-            <Icon name="mail" size={24} color="#fff" />
-
+          <View style={styles.editButton}>
+            <Text style={styles.text}>Editar</Text>
           </View>
         </View>
-        
-      
-      </View> 
-      <View style={styles.profileData} >
-          <Text style={styles.bio}>
-            consigo jogar das 22h até às 3h da manhã.. só chamar dm. Jogo fortnite muito bem.. Vem x1 seu bot
-          </Text>
-          <View style={styles.followerInformation}>
-            <Text style={styles.followerText}>32 seguindo</Text>
-            <Text style={styles.followerText}>5 seguidores</Text>
-            <Text style={styles.followerText}>45 Publicações</Text>
-          </View>
       </View>
-      <View style={styles.line}/>
+      <View style={styles.profileData}>
+        <Text style={styles.bio}>
+          consigo jogar das 22h até às 3h da manhã.. só chamar dm. Jogo fortnite muito bem.. Vem x1 seu bot
+        </Text>
+        <View style={styles.followerInformation}>
+          <Text style={styles.followerText}>{userStats ? userStats.followingCount : 0} seguindo</Text>
+          <Text style={styles.followerText}>{userStats ? userStats.followersCount : 0} seguidores</Text>
+          <Text style={styles.followerText}>45 Publicações</Text>
+        </View>
+      </View>
+      <View style={styles.line} />
       <View style={styles.posts}>
         <Text style={styles.messageText}>@{userData ? userData.username : "..."} ainda não fez uma publicação</Text>
       </View>
-      <TabMenu />
-
-      
+      <TabMenu navigation={navigation} />
     </View>
   );
 };
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   },
   banner: {
     width: '100%',
-    resizeMode: 'cover',  
+    resizeMode: 'cover',
     height: "20%",
   },
   bannerImage: {
@@ -99,7 +100,6 @@ const styles = StyleSheet.create({
   userData: {
     alignItems: "center",
     top: -65,
-
   },
   userImage: {
     width: 100,
@@ -107,7 +107,6 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     borderWidth: 2,
     borderColor: "#5312C2",
-
   },
   username: {
     color: "white",
@@ -117,12 +116,12 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     flexDirection: "row",
-    gap: 5,    
+    gap: 5,
   },
-  followButton: {
+  editButton: {
     width: 100,
     height: 40,
-    backgroundColor: "#5312C2",
+    backgroundColor: "#363636",
     borderRadius: 7,
     alignItems: "center",
     justifyContent: "center"
@@ -174,6 +173,5 @@ const styles = StyleSheet.create({
     color: "white",
   }
 });
-
 
 export default MyProfile;

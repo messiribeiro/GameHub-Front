@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
@@ -11,6 +11,18 @@ type Props = StackScreenProps<RootStackParamList, 'SignupStep2'>;
 
 const SignUpStep2 = ({ navigation }: Props) => {
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const token = await AsyncStorage.getItem('useId');
+      if (token) {
+        
+        navigation.replace('Home');
+      }
+    };
+    
+    checkLoginStatus();
+  }, [navigation]);
 
   const handleNext = async () => {
     if (password.length < 8) {

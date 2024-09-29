@@ -4,13 +4,13 @@ import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'rea
 
 import { RootStackParamList } from '../navigation';
 
-// Definindo o tipo das props
 type Props = StackScreenProps<RootStackParamList, 'Chat'>;
 
 const Chat = ({ navigation }: Props) => {
   const handleChatPress = () => {
-    // Aqui você pode navegar para a tela de detalhes do chat
-    navigation.navigate('Home'); // Substitua 'ChatDetail' pela tela desejada
+    navigation.navigate('ChatWindow', {
+      receiverId: 1,
+    });
   };
 
   return (
@@ -30,7 +30,7 @@ const Chat = ({ navigation }: Props) => {
             <View style={styles.info}>
               <View style={styles.content}>
                 <Text style={styles.userName}>Joazin</Text>
-                <Text style={styles.messagePreview}>Eae man</Text>
+                <Text style={styles.messagePreview}>Oi, quer jogar comigo?</Text>
               </View>
 
               <View style={styles.time}>
