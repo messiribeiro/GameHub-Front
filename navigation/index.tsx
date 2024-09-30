@@ -30,7 +30,7 @@ export type RootStackParamList = {
   Settings: undefined;
   MyProfile: undefined;
   Home: undefined;
-  FindGamer: undefined;
+  FindGamer: {gameId: number};
   Chat: undefined;
   ChatWindow: {
     receiverId: number;

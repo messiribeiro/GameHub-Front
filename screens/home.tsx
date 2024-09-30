@@ -1,58 +1,142 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import Header from 'components/Header';
 import TabMenu from 'components/TabMenu';
-import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator, // Importando o indicador de carregamento
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
 
 // Definindo o tipo das props
 type Props = StackScreenProps<RootStackParamList, 'Home'>;
 
-interface Post {
-  id: string;
-  username: string;
-  caption: string;
-  imageUrl: string;
-  likes: number;
-  comments: number;
-  time: string;
+interface Game {
+  id: number;
+  name: string;
+  gameimageUrl: string;
 }
 
-const images = [
-  'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200',
-  'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg',
-  'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg',
-];
+interface User {
+  id: number;
+  username: string;
+  GameUser: {
+    game: Game;
+  }[];
+}
 
 const Home = ({ navigation }: Props) => {
-  const handleImagePress = (imageUrl: string) => {
-    navigation.navigate('FindGamer');
+  const [userGames, setUserGames] = useState<Game[]>([]);
+  const [allGames, setAllGames] = useState<Game[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUserId = async () => {
+      const id = await AsyncStorage.getItem('userId');
+      setUserId(id);
+    };
+
+    loadUserId();
+  }, []);
+
+  const fetchUserGames = async () => {
+    if (!userId) return;
+    console.log(userId);
+    try {
+      const response = await api.get(`/api/users/${userId}`);
+      setUserGames(response.data.GameUser.map((gameUser: any) => gameUser.game));
+    } catch (error) {
+      console.error('Erro ao buscar jogos do usuário:', error);
+    }
   };
+
+  const fetchAllGames = async () => {
+    try {
+      const response = await api.get('/api/games');
+      setAllGames(response.data);
+    } catch (error) {
+      console.error('Erro ao buscar todos os jogos:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (userId) {
+        await fetchUserGames();
+        await fetchAllGames();
+        setLoading(false); // Define como carregado após os dados serem obtidos
+      }
+    };
+
+    fetchData();
+  }, [userId]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (userId) {
+      await fetchUserGames();
+      await fetchAllGames();
+    }
+    setRefreshing(false);
+  };
+
+  const handleImagePress = (gameId: number) => {
+    navigation.navigate('FindGamer', { gameId });
+  };
+
+  // Combinando jogos do usuário com os outros jogos
+  const combinedGames = [
+    ...userGames,
+    ...allGames.filter((game) => !userGames.some((userGame) => userGame.id === game.id)),
+  ];
+
+  // Renderiza um indicador de carregamento se os dados estiverem sendo carregados
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#fff" />
+        <Text style={styles.loadingText}>Carregando...</Text>
+      </View>
+    );
+  }
 
   return (
     <>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         <Header navigation={navigation} />
 
         <View style={styles.searchContainer}>
           <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
           <Icon name="search" size={24} color="#fff" />
         </View>
+
         <View style={styles.games}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-            {images.map((imageUrl, index) => (
+            {combinedGames.map((game, index) => (
               <TouchableOpacity
                 key={index}
-                onPress={() => handleImagePress(imageUrl)} // Adiciona a função de clique
-                style={styles.imageContainer} // Adiciona um contêiner para definir o tamanho e o espaçamento das imagens
-              >
-                <Image source={{ uri: imageUrl }} style={styles.image} />
+                onPress={() => handleImagePress(game.id)}
+                style={styles.imageContainer}>
+                <Image source={{ uri: game.gameimageUrl }} style={styles.image} />
               </TouchableOpacity>
             ))}
           </ScrollView>
         </View>
+
         <View style={styles.postContainer}>
           <View style={styles.post}>
             <View style={styles.user}>
@@ -107,13 +191,21 @@ const styles = StyleSheet.create({
     color: 'white',
     paddingBottom: 40,
   },
-
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#121212',
+  },
+  loadingText: {
+    color: 'white',
+    marginTop: 10,
+  },
   userImage: {
     width: 40,
     height: 40,
     borderRadius: 50,
   },
-
   searchContainer: {
     display: 'flex',
     flexDirection: 'row',
@@ -126,29 +218,25 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 17,
   },
-
   games: {
     paddingLeft: '2%',
     paddingRight: '2%',
   },
-
   scrollView: {
     paddingTop: 15,
   },
   imageContainer: {
-    marginRight: 10, // Espaçamento entre as imagens
+    marginRight: 10,
   },
   image: {
     width: 70,
     height: 70,
     borderRadius: 10,
   },
-
   post: {
     marginTop: 35,
   },
   postContainer: {},
-
   user: {
     display: 'flex',
     flexDirection: 'row',
@@ -169,7 +257,6 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 5,
   },
-
   dataView: {
     display: 'flex',
     flexDirection: 'row',
@@ -187,11 +274,9 @@ const styles = StyleSheet.create({
   userName: {
     color: 'white',
   },
-
   comments: {
     color: 'white',
   },
-
   likes: {
     color: 'white',
   },
@@ -203,7 +288,6 @@ const styles = StyleSheet.create({
   },
   time: {
     color: 'white',
-    opacity: 0.4,
   },
 });
 

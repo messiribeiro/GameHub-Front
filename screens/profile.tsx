@@ -180,7 +180,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.followerInformation}>
           <Text style={styles.followerText}>{followStats?.followingCount || 0} seguindo</Text>
           <Text style={styles.followerText}>{followStats?.followersCount || 0} seguidores</Text>
-          <Text style={styles.followerText}>45 Publicações</Text>
+          <Text style={styles.followerText}>0 Publicações</Text>
         </View>
       </View>
       <View style={styles.line} />

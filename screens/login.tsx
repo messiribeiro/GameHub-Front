@@ -16,9 +16,8 @@ const LoginScreen = ({ navigation }: Props) => {
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      const token = await AsyncStorage.getItem('useId');
-      if (token) {
-        
+      const userId = await AsyncStorage.getItem('useId');
+      if (userId) {
         navigation.replace('Home');
       }
     };

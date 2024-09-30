@@ -3,8 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import TabMenu from 'components/TabMenu';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import { StyleSheet, Text, View, Image, ActivityIndicator } from 'react-native';
 import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
@@ -26,6 +25,7 @@ type Props = StackScreenProps<RootStackParamList, 'MyProfile'>;
 const MyProfile: React.FC<Props> = ({ navigation }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [loading, setLoading] = useState<boolean>(true); // State for loading
 
   useEffect(() => {
     const getUserData = async () => {
@@ -38,14 +38,23 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
       // Fetch user stats
       const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
       setUserStats(statsResponse.data);
+      setLoading(false); // Set loading to false after fetching data
     };
     getUserData();
   }, []);
 
+  if (loading) { // Render loading indicator if loading is true
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FFFFFF" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.banner}>
-        <Image source={{ uri: "https://s3.static.brasilescola.uol.com.br/be/2023/09/1-escudo-do-corinthians.jpg" }} style={styles.bannerImage} />
+        <Image source={{ uri: "https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png" }} style={styles.bannerImage} />
       </View>
       <View style={styles.userProfileActionsView}>
         <View style={styles.userData}>
@@ -89,7 +98,7 @@ const styles = StyleSheet.create({
   },
   bannerImage: {
     width: "100%",
-    height: "100%"
+    height: "100%",
   },
   userProfileActionsView: {
     flexDirection: "row",
@@ -124,20 +133,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#363636",
     borderRadius: 7,
     alignItems: "center",
-    justifyContent: "center"
-  },
-  messageButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: "#5312C2",
-    borderRadius: 7,
-    alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
   text: {
     color: "white",
     fontSize: 16,
-    fontWeight: "500"
+    fontWeight: "500",
   },
   profileData: {
     paddingLeft: 15,
@@ -171,7 +172,13 @@ const styles = StyleSheet.create({
   },
   messageText: {
     color: "white",
-  }
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#121212', // Cor de fundo igual ao resto do aplicativo
+  },
 });
 
 export default MyProfile;

@@ -36,7 +36,7 @@ const SignUpStep3 = ({ navigation }: Props) => {
 
     try {
       // Save email to AsyncStorage
-      await AsyncStorage.setItem('userEmail', email);
+      await AsyncStorage.setItem('email', email);
 
       // Navigate to GameSelect
       navigation.navigate('GameSelect');

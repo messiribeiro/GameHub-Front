@@ -37,12 +37,20 @@ interface User {
   profilePictureUrl: string;
   GameUser: GameUser[];
 }
+
+interface InterestUser {
+  userId: number;
+  userName: string;
+}
+
 type Props = StackScreenProps<RootStackParamList, 'FindGamer'>;
 
 const FindGamer = ({ navigation }: Props) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [interestUsers, setInterestUsers] = useState<InterestUser[]>([]);
   const [currentUserIndex, setCurrentUserIndex] = useState(0);
   const [userId, setUserId] = useState<string | null>(null);
+  const [currentGameId, setCurrentGameId] = useState<number | null>(null);
 
   useEffect(() => {
     const getUserId = async () => {
@@ -74,11 +82,33 @@ const FindGamer = ({ navigation }: Props) => {
     }
   };
 
+  // Função para buscar usuários interessados em um jogo
+  const fetchInterestUsers = async (gameId: number) => {
+    try {
+      const response = await api.get(`api/user-game-interests/game/${gameId}`);
+      const data: InterestUser[] = response.data;
+
+      if (Array.isArray(data)) {
+        setInterestUsers(data);
+      } else {
+        console.error('A resposta da API não é uma array:', data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar dados de interesse:', error);
+    }
+  };
+
   useEffect(() => {
     if (userId) {
       fetchUsers();
     }
   }, [userId]);
+
+  useEffect(() => {
+    if (currentGameId) {
+      fetchInterestUsers(currentGameId);
+    }
+  }, [currentGameId]);
 
   // URL da imagem padrão
   const defaultImageUrl =
@@ -101,12 +131,14 @@ const FindGamer = ({ navigation }: Props) => {
         <View style={styles.bio}>
           <Text style={styles.gamesText}>Jogos</Text>
           <View style={styles.games}>
-            {item.GameUser.map((gameUser, index) => (
-              <Image
-                key={index}
-                source={{ uri: gameUser.game.gameimageUrl }}
-                style={styles.gameImage}
-              />
+            {item.GameUser.map((gameUser) => (
+              <TouchableOpacity
+                key={gameUser.gameId}
+                onPress={() => {
+                  setCurrentGameId(gameUser.gameId); // Atualiza o gameId atual
+                }}>
+                <Image source={{ uri: gameUser.game.gameimageUrl }} style={styles.gameImage} />
+              </TouchableOpacity>
             ))}
           </View>
         </View>

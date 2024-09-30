@@ -32,7 +32,7 @@ const SignUpStep2 = ({ navigation }: Props) => {
 
     try {
       // Salvar a senha no AsyncStorage
-      await AsyncStorage.setItem('userPassword', password);
+      await AsyncStorage.setItem('password', password);
 
       // Navegar para a próxima tela
       navigation.navigate('SignupStep3');

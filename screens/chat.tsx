@@ -10,6 +10,7 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator, // Adicione o ActivityIndicator
 } from 'react-native';
 import api from 'services/api'; // Importando a configuração da API
 
@@ -40,6 +41,7 @@ const Chat = ({ navigation }: Props) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false); // Estado para controlar se os dados foram carregados
   const defaultProfilePicture =
     'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M=';
 
@@ -73,6 +75,7 @@ const Chat = ({ navigation }: Props) => {
       console.error('Erro ao buscar mensagens:', error);
     } finally {
       setRefreshing(false);
+      setDataLoaded(true); // Define como carregado após a requisição
     }
   };
 
@@ -137,59 +140,69 @@ const Chat = ({ navigation }: Props) => {
         style={styles.chats}
         contentContainerStyle={{ flexGrow: 1 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {messages
-          .filter((msg) => msg.receiverId !== msg.senderId)
-          .map((message: Message) => {
-            const otherUserId =
-              message.senderId === Number(userId) ? message.receiverId : message.senderId;
-            const user =
-              message.senderId === Number(userId) ? message.messageReceiver : message.messageSender;
-            console.log(user.profilePictureUrl);
-            return (
-              <TouchableOpacity
-                key={message.id}
-                onPress={() => handleChatPress(otherUserId, message.id, user.username)}>
-                <View style={styles.chat}>
-                  <View style={styles.imageContainer}>
-                    <Image
-                      source={{
-                        uri:
-                          user.profilePictureUrl &&
-                          user.profilePictureUrl !== 'https://example.com/profile-picture.jpg'
-                            ? user.profilePictureUrl
-                            : defaultProfilePicture,
-                      }}
-                      style={styles.userImage}
-                    />
-                  </View>
-                  <View style={styles.info}>
-                    <View style={styles.content}>
-                      <Text style={styles.userName}>{user.username}</Text>
-                      <Text
-                        style={[
-                          styles.messagePreview,
-                          {
-                            fontWeight:
-                              message.senderId === Number(userId)
-                                ? '400'
-                                : message.isRead
+        {!dataLoaded ? ( // Mostra o carregamento enquanto os dados não estão carregados
+          <ActivityIndicator size="large" color="#ffffff" style={{ flex: 1 }} />
+        ) : messages.length > 0 ? (
+          messages
+            .filter((msg) => msg.receiverId !== msg.senderId)
+            .map((message: Message) => {
+              const otherUserId =
+                message.senderId === Number(userId) ? message.receiverId : message.senderId;
+              const user =
+                message.senderId === Number(userId)
+                  ? message.messageReceiver
+                  : message.messageSender;
+
+              return (
+                <TouchableOpacity
+                  key={message.id}
+                  onPress={() => handleChatPress(otherUserId, message.id, user.username)}>
+                  <View style={styles.chat}>
+                    <View style={styles.imageContainer}>
+                      <Image
+                        source={{
+                          uri:
+                            user.profilePictureUrl &&
+                            user.profilePictureUrl !== 'https://example.com/profile-picture.jpg'
+                              ? user.profilePictureUrl
+                              : defaultProfilePicture,
+                        }}
+                        style={styles.userImage}
+                      />
+                    </View>
+                    <View style={styles.info}>
+                      <View style={styles.content}>
+                        <Text style={styles.userName}>{user.username}</Text>
+                        <Text
+                          style={[
+                            styles.messagePreview,
+                            {
+                              fontWeight:
+                                message.senderId === Number(userId)
                                   ? '400'
-                                  : '800',
-                          },
-                        ]}>
-                        {message.senderId === Number(userId)
-                          ? `Você: ${truncateMessage(message.content, 25)}` // Limite de 30 caracteres
-                          : truncateMessage(message.content, 25)}
-                      </Text>
-                    </View>
-                    <View style={styles.time}>
-                      <Text style={styles.timeText}>{formatTime(message.createdAt)}</Text>
+                                  : message.isRead
+                                    ? '400'
+                                    : '800',
+                            },
+                          ]}>
+                          {message.senderId === Number(userId)
+                            ? `Você: ${truncateMessage(message.content, 25)}` // Limite de 25 caracteres
+                            : truncateMessage(message.content, 25)}
+                        </Text>
+                      </View>
+                      <View style={styles.time}>
+                        <Text style={styles.timeText}>{formatTime(message.createdAt)}</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+                </TouchableOpacity>
+              );
+            })
+        ) : (
+          <View style={styles.noMessagesContainer}>
+            <Text style={styles.noMessagesText}>Você ainda não tem conversas</Text>
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -225,47 +238,56 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
-  },
-  userName: {
-    color: 'white',
-    fontWeight: '300',
-  },
-  messagePreview: {
-    color: 'white',
-    fontWeight: '800',
-  },
-  timeText: {
-    color: 'white',
-    fontWeight: '500',
-    fontSize: 12,
-    opacity: 0.5,
+    alignItems: 'center',
+    marginBottom: 6,
+    padding: 10,
   },
   imageContainer: {
-    width: '15%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userImage: {
     width: 50,
     height: 50,
-    borderRadius: 50,
+    borderRadius: 50 / 2,
+    overflow: 'hidden',
+    marginRight: 10,
   },
-  content: {
-    display: 'flex',
-  },
-  time: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
+  userImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50 / 2,
   },
   info: {
-    width: '85%',
-    display: 'flex',
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 10,
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+    marginRight: 10,
+  },
+  userName: {
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  messagePreview: {
+    fontWeight: '400',
+    color: 'white',
+  },
+  time: {
+    justifyContent: 'center',
+  },
+  timeText: {
+    fontSize: 12,
+    color: 'white',
+  },
+  noMessagesContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noMessagesText: {
+    color: 'white',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
 

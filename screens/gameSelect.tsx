@@ -15,38 +15,21 @@ const GameSelect = ({ navigation }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGames, setSelectedGames] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [games, setGames] = useState<any[]>([]); // Inicializando a lista de jogos como um array vazio
 
-  const games = [
-    {
-      id: '1',
-      name: 'Apex Legends',
-      icon: { uri: 'https://www.malwarebytes.com/wp-content/uploads/sites/2/2024/03/Apex_legends_logo.png?w=1200' },
-    },
-    {
-      id: '2',
-      name: 'World of Warcraft',
-      icon: { uri: 'https://roadtovrlive-5ea0.kxcdn.com/wp-content/uploads/2024/04/wovr.jpg' },
-    },
-    {
-      id: '3',
-      name: 'Age of Empires',
-      icon: { uri: 'https://www.ageofempires.com/wp-content/uploads/2021/10/ogthumb.jpg' },
-    },
-    {
-      id: '4',
-      name: 'League of Legends',
-      icon: { uri: 'https://static.wikia.nocookie.net/leagueoflegends/images/7/76/LoL_Icon.png/revision/latest?cb=20170427054945' },
-    },
-    // Add more games here
-  ];
-
-  // Carregar o ID do usuário do AsyncStorage
+  // Carregar jogos da API
   useEffect(() => {
-    const loadUserId = async () => {
-      const id = await AsyncStorage.getItem('userId');
-      setUserId(id);
+    const fetchGames = async () => {
+      try {
+        const response = await api.get('/api/games'); // Ajuste a rota conforme necessário
+        setGames(response.data); // Supondo que a resposta tenha a lista de jogos
+      } catch (error) {
+        console.error('Erro ao buscar jogos:', error);
+        Alert.alert('Erro', 'Não foi possível carregar os jogos.');
+      }
     };
-    loadUserId();
+
+    fetchGames();
   }, []);
 
   // Filtra os jogos com base na busca
@@ -63,32 +46,33 @@ const GameSelect = ({ navigation }: Props) => {
     }
   };
 
+  const handleSave = async () => {
+    try {
+      const username = await AsyncStorage.getItem("username");
+      const email = await AsyncStorage.getItem("email");
+      const password = await AsyncStorage.getItem("password");
+  
+      const response = await api.post('/api/auth/signup', {
+        username,
+        email,
+        password,
+        profilePicture: 'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M=',
+        games: selectedGames,
+      });
 
 
-    const handleSave = async () => {
-      try {
-        const userResponse = await api.post('/api/auth/signup', {
-          username: 'testUser',
-          email: 'test@example.com',
-          password: 'password123',
-          profilePicture: null,
-          game: [1, 2], // Example game IDs
-        });
-
-        console.log('API Response:', userResponse);
-
-        if (userResponse.status === 201) {
-          navigation.navigate('Home');
-        } else {
-          Alert.alert('Erro', 'Não foi possível criar o usuário.');
-        }
-      } catch (error) {
-        console.error('API Error:', error);
-        Alert.alert('Erro', 'Erro ao processar sua solicitação.');
+      if (response.status === 201) {
+        const newUserId = response.data.data.id; 
+        await AsyncStorage.setItem("userId", String(newUserId));
+        navigation.navigate('Home');
+      } else {
+        Alert.alert('Erro', 'Não foi possível criar o usuário.');
       }
-    };
-
-
+    } catch (error) {
+      console.error('API Error:', error);
+      Alert.alert('Erro', 'Erro ao processar sua solicitação.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -107,7 +91,6 @@ const GameSelect = ({ navigation }: Props) => {
           />
         </View>
 
-        {/* Lista de Jogos */}
         <FlatList
           data={filteredGames}
           keyExtractor={(item) => item.id}
@@ -120,7 +103,7 @@ const GameSelect = ({ navigation }: Props) => {
               ]}
               onPress={() => toggleSelectGame(item.id)}
             >
-              <Image source={item.icon} style={styles.gameIcon} />
+              <Image source={{ uri: item.gameimageUrl }} style={styles.gameIcon} />
             </TouchableOpacity>
           )}
           style={styles.gameList}
@@ -175,15 +158,19 @@ const styles = StyleSheet.create({
     margin: 5,
     alignItems: 'center',
     justifyContent: 'center',
+    width: 85, // Defina uma largura fixa
+    height: 85, // Defina uma altura fixa
+    borderRadius: 5,
   },
   selectedGameIconContainer: {
     borderWidth: 2,
     borderColor: '#512DA8',
     borderRadius: 5,
+    padding: 2,
   },
   gameIcon: {
-    width: 75,
-    height: 75,
+    width: '100%',
+    height: '100%',
     borderRadius: 5,
   },
   button: {
