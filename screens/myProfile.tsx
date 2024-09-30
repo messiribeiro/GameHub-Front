@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import TabMenu from 'components/TabMenu';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
@@ -27,6 +27,7 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true); // State for loading
 
+
   useEffect(() => {
     const getUserData = async () => {
       const profileUserId = await AsyncStorage.getItem("userId");
@@ -42,6 +43,11 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
     };
     getUserData();
   }, []);
+
+  const handleEditProfile = () => {
+    navigation.navigate('EditProfile');
+  };
+
 
   if (loading) { // Render loading indicator if loading is true
     return (
@@ -61,15 +67,17 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
           <Image source={{ uri: userData?.profilePictureUrl }} style={styles.userImage} />
           <Text style={styles.username}>@{userData ? userData.username : "user"}</Text>
         </View>
-        <View style={styles.buttonsContainer}>
-          <View style={styles.editButton}>
-            <Text style={styles.text}>Editar</Text>
-          </View>
-        </View>
+         <View style={styles.buttonsContainer}>
+           <View style={styles.editButton}>
+              <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+                <Text style={styles.text}>Editar</Text>
+              </TouchableOpacity>
+           </View>
+         </View>
       </View>
       <View style={styles.profileData}>
         <Text style={styles.bio}>
-          consigo jogar das 22h até às 3h da manhã.. só chamar dm. Jogo fortnite muito bem.. Vem x1 seu bot
+          {userData?.bio ? userData.bio : "Clique em editar para adicionar um bio.  "}
         </Text>
         <View style={styles.followerInformation}>
           <Text style={styles.followerText}>{userStats ? userStats.followingCount : 0} seguindo</Text>
