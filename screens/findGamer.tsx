@@ -1,8 +1,5 @@
-/* eslint-disable prettier/prettier */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import Header from 'components/Header';
-import TabMenu from 'components/TabMenu';
 import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
@@ -12,9 +9,9 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
-  ListRenderItem
+  ListRenderItem,
 } from 'react-native';
-import api from 'services/api'; // Importa a instância configurada do axios
+import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
 
@@ -24,7 +21,7 @@ const { height } = Dimensions.get('window');
 interface Game {
   id: number;
   name: string;
-  gameimageUrl: string; 
+  gameimageUrl: string;
   description: string | null;
 }
 
@@ -49,9 +46,9 @@ const FindGamer = ({ navigation }: Props) => {
 
   useEffect(() => {
     const getUserId = async () => {
-      const id = await AsyncStorage.getItem("userId");
+      const id = await AsyncStorage.getItem('userId');
       setUserId(id);
-      console.log("userId após a atualização:", id); // Aqui, você verá o valor atualizado
+      console.log('userId após a atualização:', id);
     };
     getUserId();
   }, []);
@@ -60,11 +57,10 @@ const FindGamer = ({ navigation }: Props) => {
   const fetchUsers = async () => {
     if (!userId) {
       console.error('userId é null ou undefined');
-      return; // Retorna se userId não for válido
+      return;
     }
-    
+
     try {
-      console.log("teste", userId); // Verifique se userId está correto
       const response = await api.get(`api/user-game-interests/similar-games/${userId}`);
       const data = response.data;
 
@@ -84,25 +80,43 @@ const FindGamer = ({ navigation }: Props) => {
     }
   }, [userId]);
 
-  const renderUser: ListRenderItem<User> = ({ item }) => (
-    <View style={styles.gamerData}>
-      <Image source={{ uri: item.profilePictureUrl }} style={styles.userImage} />
-      <Text style={styles.username}>{item.username}</Text>
-      <View style={styles.bio}>
-        <Text style={styles.gamesText}>Jogos</Text>
-        <View style={styles.games}>
-          {item.GameUser.map((gameUser, index) => (
-            <Image key={index} source={{ uri: gameUser.game.gameimageUrl }} style={styles.gameImage} />
-          ))}
+  // URL da imagem padrão
+  const defaultImageUrl =
+    'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M=';
+
+  const renderUser: ListRenderItem<User> = ({ item }) => {
+    // Verifica a URL da imagem e substitui, se necessário
+    const profileImageUrl =
+      item.profilePictureUrl === 'https://example.com/profile-picture.jpg'
+        ? defaultImageUrl
+        : item.profilePictureUrl;
+
+    return (
+      <View style={styles.gamerData}>
+        <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
+        <Text style={styles.username}>{item.username}</Text>
+        <View style={styles.bio}>
+          <Text style={styles.gamesText}>Jogos</Text>
+          <View style={styles.games}>
+            {item.GameUser.map((gameUser, index) => (
+              <Image
+                key={index}
+                source={{ uri: gameUser.game.gameimageUrl }}
+                style={styles.gameImage}
+              />
+            ))}
+          </View>
         </View>
+        <TouchableOpacity
+          style={styles.invite}
+          onPress={() => {
+            navigation.navigate('ChatWindow', { receiverId: item.id, receiverName: item.username });
+          }}>
+          <Text style={styles.inviteText}>Convidar</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity style={styles.invite} onPress={() => {
-        navigation.navigate("ChatWindow", { receiverId: item.id })
-      }} >
-        <Text style={styles.inviteText}>Convidar</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -134,7 +148,7 @@ const styles = StyleSheet.create({
   },
   gamerData: {
     width: '100%',
-    height, // Altura igual à altura da tela
+    height,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -164,10 +178,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '500',
   },
-  gameText: {
-    color: 'white',
-    marginTop: 10,
-  },
   invite: {
     width: 130,
     height: 40,
@@ -182,15 +192,15 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   games: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 5,
     marginTop: 5,
   },
   gameImage: {
     width: 40,
     height: 40,
-    borderRadius: 5
-  }
+    borderRadius: 5,
+  },
 });
 
 export default FindGamer;

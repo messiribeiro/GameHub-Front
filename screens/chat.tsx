@@ -113,7 +113,7 @@ const Chat = ({ navigation }: Props) => {
     return message;
   };
 
-  const handleChatPress = async (otherUserId: number, messageId: number) => {
+  const handleChatPress = async (otherUserId: number, messageId: number, receiverName: string) => {
     const readMessages = await AsyncStorage.getItem('readMessages');
     const readMessagesArray = readMessages ? JSON.parse(readMessages) : [];
 
@@ -124,6 +124,7 @@ const Chat = ({ navigation }: Props) => {
 
     navigation.navigate('ChatWindow', {
       receiverId: otherUserId,
+      receiverName,
     });
   };
 
@@ -147,7 +148,7 @@ const Chat = ({ navigation }: Props) => {
             return (
               <TouchableOpacity
                 key={message.id}
-                onPress={() => handleChatPress(otherUserId, message.id)}>
+                onPress={() => handleChatPress(otherUserId, message.id, user.username)}>
                 <View style={styles.chat}>
                   <View style={styles.imageContainer}>
                     <Image

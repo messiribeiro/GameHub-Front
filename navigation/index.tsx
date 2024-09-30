@@ -32,7 +32,10 @@ export type RootStackParamList = {
   Home: undefined;
   FindGamer: undefined;
   Chat: undefined;
-  ChatWindow: { receiverId: number };
+  ChatWindow: {
+    receiverId: number;
+    receiverName: string; // Add receiverName here
+  };
 
 
 };

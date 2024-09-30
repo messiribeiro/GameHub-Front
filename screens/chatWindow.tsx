@@ -24,6 +24,7 @@ interface Message {
 
 const ChatWindow = ({ navigation, route }: Props) => {
   const { receiverId } = route.params;
+  const {receiverName} = route.params;
   const [userId, setUserId] = useState<string | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [messages, setMessages] = useState<{ text: string; time: string; imageUri?: string }[]>([]);
@@ -68,8 +69,8 @@ const ChatWindow = ({ navigation, route }: Props) => {
           });
 
           setTimeout(() => {
-            scrollToBottom();
-          }, 100);
+          scrollToBottom();
+        }, 100);
 
         } catch (error) {
           console.error('Erro ao buscar mensagens:', error);
@@ -141,7 +142,7 @@ const ChatWindow = ({ navigation, route }: Props) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerText}>@joazin</Text>
+        <Text style={styles.headerText}>@{receiverName}</Text>
       </View>
       <ScrollView
         ref={scrollViewRef}
@@ -263,7 +264,6 @@ const styles = StyleSheet.create({
   messages: {
     paddingRight: 15,
     paddingLeft: 15,
-
     paddingTop: 15,
     display: 'flex',
     paddingBottom: 30,
