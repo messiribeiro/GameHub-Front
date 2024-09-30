@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
 import {
@@ -39,6 +40,8 @@ const Chat = ({ navigation }: Props) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const defaultProfilePicture =
+    'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M=';
 
   useEffect(() => {
     (async () => {
@@ -73,11 +76,16 @@ const Chat = ({ navigation }: Props) => {
     }
   };
 
-  useEffect(() => {
-    if (userId) {
-      fetchMessages();
-    }
-  }, [userId]);
+  // Adiciona o listener para atualizar mensagens quando a tela receber foco
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchMessages(); // Chama a função para buscar as mensagens sempre que a tela receber foco
+
+      return () => {
+        // Cleanup se necessário
+      };
+    }, [userId]) // Adicionando userId como dependência
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -89,10 +97,20 @@ const Chat = ({ navigation }: Props) => {
     const messageDate = new Date(dateString);
     const diffInSeconds = Math.floor((now.getTime() - messageDate.getTime()) / 1000);
 
+    // Verificação para evitar números negativos
+    if (diffInSeconds < 0) return '0 seg';
+
     if (diffInSeconds < 60) return `há ${diffInSeconds} seg`;
     if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} min`;
     if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} h`;
     return `há ${Math.floor(diffInSeconds / 86400)} d`;
+  };
+
+  const truncateMessage = (message: string, maxLength: number) => {
+    if (message.length > maxLength) {
+      return message.substring(0, maxLength) + '...';
+    }
+    return message;
   };
 
   const handleChatPress = async (otherUserId: number, messageId: number) => {
@@ -125,14 +143,23 @@ const Chat = ({ navigation }: Props) => {
               message.senderId === Number(userId) ? message.receiverId : message.senderId;
             const user =
               message.senderId === Number(userId) ? message.messageReceiver : message.messageSender;
-
+            console.log(user.profilePictureUrl);
             return (
               <TouchableOpacity
                 key={message.id}
                 onPress={() => handleChatPress(otherUserId, message.id)}>
                 <View style={styles.chat}>
                   <View style={styles.imageContainer}>
-                    <Image source={{ uri: user.profilePictureUrl }} style={styles.userImage} />
+                    <Image
+                      source={{
+                        uri:
+                          user.profilePictureUrl &&
+                          user.profilePictureUrl !== 'https://example.com/profile-picture.jpg'
+                            ? user.profilePictureUrl
+                            : defaultProfilePicture,
+                      }}
+                      style={styles.userImage}
+                    />
                   </View>
                   <View style={styles.info}>
                     <View style={styles.content}>
@@ -147,11 +174,11 @@ const Chat = ({ navigation }: Props) => {
                                 : message.isRead
                                   ? '400'
                                   : '800',
-                          }, // Ajuste aqui
+                          },
                         ]}>
                         {message.senderId === Number(userId)
-                          ? `Você: ${message.content}`
-                          : message.content}
+                          ? `Você: ${truncateMessage(message.content, 25)}` // Limite de 30 caracteres
+                          : truncateMessage(message.content, 25)}
                       </Text>
                     </View>
                     <View style={styles.time}>

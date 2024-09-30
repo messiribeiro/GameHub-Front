@@ -66,6 +66,11 @@ const ChatWindow = ({ navigation, route }: Props) => {
           response.data.messages.forEach((message: Message) => {
             console.log(message);
           });
+
+          setTimeout(() => {
+            scrollToBottom();
+          }, 100);
+
         } catch (error) {
           console.error('Erro ao buscar mensagens:', error);
           setLoading(false); // Define como carregado mesmo em erro
@@ -269,7 +274,7 @@ const styles = StyleSheet.create({
     paddingRight: 15,
     paddingTop: 10,
     paddingBottom: 10,
-    borderRadius: 24,
+    borderRadius: 15,
     backgroundColor: '#5312C2',
     alignSelf: 'flex-end',
   },
@@ -279,7 +284,7 @@ const styles = StyleSheet.create({
     paddingRight: 15,
     paddingTop: 10,
     paddingBottom: 10,
-    borderRadius: 24,
+    borderRadius: 15,
     backgroundColor: '#363636',
     alignSelf: 'flex-start',
   },
