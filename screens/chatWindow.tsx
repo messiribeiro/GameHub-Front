@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
@@ -24,23 +24,21 @@ interface Message {
 
 const ChatWindow = ({ navigation, route }: Props) => {
   const { receiverId } = route.params;
-  const [userId, setUseriD] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [messages, setMessages] = useState<{ text: string; time: string; imageUri?: string }[]>([]);
-  const [receivedMessages, setReceivedMessages] = useState<
-    { text: string; time: string; imageUri?: string }[]
-  >([]);
+  const [receivedMessages, setReceivedMessages] = useState<{ text: string; time: string; imageUri?: string }[]>([]);
   const [inputValue, setInputValue] = useState<string>('');
   const scrollViewRef = useRef<ScrollView>(null);
   const [contentHeight, setContentHeight] = useState(0);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const [oldMessages, setOldMessages] = useState<Message[]>([]);
-
+  const [loading, setLoading] = useState<boolean>(true); // Estado de carregamento
 
   useEffect(() => {
     (async () => {
       const id = await AsyncStorage.getItem('userId');
-      setUseriD(id);
+      setUserId(id);
     })();
   }, []);
 
@@ -53,27 +51,28 @@ const ChatWindow = ({ navigation, route }: Props) => {
     })();
   }, []);
 
-
   useEffect(() => {
     const getAllMessages = async () => {
       if (userId) {
         try {
           const response = await api.get(`api/chat/messages/${userId}/${receiverId}`);
           console.log("testando");
-          
+
           // Atualiza o estado com as mensagens retornadas
           setOldMessages(response.data.messages);
-  
+          setLoading(false); // Define como carregado
+
           // Exibe as mensagens no console
           response.data.messages.forEach((message: Message) => {
             console.log(message);
           });
         } catch (error) {
           console.error('Erro ao buscar mensagens:', error);
+          setLoading(false); // Define como carregado mesmo em erro
         }
       }
     };
-  
+
     getAllMessages();
   }, [userId, receiverId]);
 
@@ -110,7 +109,6 @@ const ChatWindow = ({ navigation, route }: Props) => {
           console.log(response.data);
         } catch (err) {
           console.error('Erro ao enviar mensagem:', err);
-
           return null;
         }
       };
@@ -147,65 +145,68 @@ const ChatWindow = ({ navigation, route }: Props) => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-
-      {
-        oldMessages.map((message) => {
-          const createdAt = new Date(message.createdAt); // Converter para Date
-          if (String(message.senderId) === String(userId)) {
-            return (
-              <View key={message.id} style={styles.sentContainer}>
-                <View style={styles.sentMessage}>
-                  <Text style={styles.messageText}>{message.content}</Text>
-                </View>
-                <Text style={styles.timeTextSent}>
-                  {createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
+        {loading ? ( // Se estiver carregando, mostra o indicador
+          <ActivityIndicator size="large" color="#fff" style={styles.loadingIndicator} />
+        ) : (
+          <>
+            {oldMessages.map((message) => {
+              const createdAt = new Date(message.createdAt); // Converter para Date
+              if (String(message.senderId) === String(userId)) {
+                return (
+                  <View key={message.id} style={styles.sentContainer}>
+                    <View style={styles.sentMessage}>
+                      <Text style={styles.messageText}>{message.content}</Text>
+                    </View>
+                    <Text style={styles.timeTextSent}>
+                      {createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
+                );
+              } else {
+                return (
+                  <View key={message.id} style={styles.receivedContainer}>
+                    <View style={styles.receivedMessage}>
+                      <Text style={styles.messageText}>{message.content}</Text>
+                    </View>
+                    <Text style={styles.timeTextReceived}>
+                      {createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
+                );
+              }
+            })}
+            {receivedMessages.map((message, index) => (
+              <View key={index} style={styles.receivedContainer}>
+                {message.imageUri && (
+                  <View style={styles.receivedContainerImage}>
+                    <Image source={{ uri: message.imageUri }} style={styles.image} />
+                  </View>
+                )}
+                {message.text && (
+                  <View style={styles.receivedMessage}>
+                    <Text style={styles.messageText}>{message.text}</Text>
+                  </View>
+                )}
+                <Text style={styles.timeTextReceived}>{message.time}</Text>
               </View>
-            );
-          } else {
-            return (
-              <View key={message.id} style={styles.receivedContainer}>
-                <View style={styles.receivedMessage}>
-                  <Text style={styles.messageText}>{message.content}</Text>
-                </View>
-                <Text style={styles.timeTextReceived}>
-                  {createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </Text>
+            ))}
+            {messages.map((message, index) => (
+              <View key={index} style={styles.sentContainer}>
+                {message.imageUri && (
+                  <View style={styles.sentContainerImage}>
+                    <Image source={{ uri: message.imageUri }} style={styles.image} />
+                  </View>
+                )}
+                {message.text && (
+                  <View style={styles.sentMessage}>
+                    <Text style={styles.messageText}>{message.text}</Text>
+                  </View>
+                )}
+                <Text style={styles.timeTextSent}>{message.time}</Text>
               </View>
-            );
-          }
-        })
-      }
-        {receivedMessages.map((message, index) => (
-          <View key={index} style={styles.receivedContainer}>
-            {message.imageUri && (
-              <View style={styles.receivedContainerImage}>
-                <Image source={{ uri: message.imageUri }} style={styles.image} />
-              </View>
-            )}
-            {message.text && (
-              <View style={styles.receivedMessage}>
-                <Text style={styles.messageText}>{message.text}</Text>
-              </View>
-            )}
-            <Text style={styles.timeTextReceived}>{message.time}</Text>
-          </View>
-        ))}
-        {messages.map((message, index) => (
-          <View key={index} style={styles.sentContainer}>
-            {message.imageUri && (
-              <View style={styles.sentContainerImage}>
-                <Image source={{ uri: message.imageUri }} style={styles.image} />
-              </View>
-            )}
-            {message.text && (
-              <View style={styles.sentMessage}>
-                <Text style={styles.messageText}>{message.text}</Text>
-              </View>
-            )}
-            <Text style={styles.timeTextSent}>{message.time}</Text>
-          </View>
-        ))}
+            ))}
+          </>
+        )}
       </ScrollView>
       <View style={styles.chatActionBar}>
         <View style={styles.inputContainer}>
@@ -231,6 +232,7 @@ const ChatWindow = ({ navigation, route }: Props) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -364,6 +366,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 14,
     top: '-2.5%',
+  },
+  loadingIndicator: {
+    marginTop: 350, // Adicione algum espaçamento para o indicador
+    alignSelf: 'center', 
   },
 });
 

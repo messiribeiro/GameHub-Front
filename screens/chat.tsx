@@ -1,15 +1,111 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import React from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+} from 'react-native';
+import api from 'services/api'; // Importando a configuração da API
 
 import { RootStackParamList } from '../navigation';
 
 type Props = StackScreenProps<RootStackParamList, 'Chat'>;
 
+interface Message {
+  id: number;
+  senderId: number;
+  receiverId: number;
+  content: string;
+  createdAt: string;
+  isRead: boolean; // Adiciona o campo isRead
+  messageSender: {
+    id: number;
+    username: string;
+    profilePictureUrl: string;
+  };
+  messageReceiver: {
+    id: number;
+    username: string;
+    profilePictureUrl: string;
+  };
+}
+
 const Chat = ({ navigation }: Props) => {
-  const handleChatPress = () => {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const id = await AsyncStorage.getItem('userId');
+      console.log(id);
+      setUserId(id);
+    })();
+  }, []);
+
+  const fetchMessages = async () => {
+    if (!userId) return;
+
+    try {
+      const response = await api.get(`/api/chat/user/${userId}`);
+      const sortedMessages = response.data.sort((a: Message, b: Message) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+
+      const readMessages = await AsyncStorage.getItem('readMessages');
+      const readMessagesArray = readMessages ? JSON.parse(readMessages) : [];
+
+      const updatedMessages = sortedMessages.map((message: Message) => ({
+        ...message,
+        isRead: readMessagesArray.includes(message.id),
+      }));
+
+      setMessages(updatedMessages);
+    } catch (error) {
+      console.error('Erro ao buscar mensagens:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      fetchMessages();
+    }
+  }, [userId]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchMessages();
+  };
+
+  const formatTime = (dateString: string) => {
+    const now = new Date();
+    const messageDate = new Date(dateString);
+    const diffInSeconds = Math.floor((now.getTime() - messageDate.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return `há ${diffInSeconds} seg`;
+    if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} min`;
+    if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} h`;
+    return `há ${Math.floor(diffInSeconds / 86400)} d`;
+  };
+
+  const handleChatPress = async (otherUserId: number, messageId: number) => {
+    const readMessages = await AsyncStorage.getItem('readMessages');
+    const readMessagesArray = readMessages ? JSON.parse(readMessages) : [];
+
+    if (!readMessagesArray.includes(messageId)) {
+      readMessagesArray.push(messageId);
+      await AsyncStorage.setItem('readMessages', JSON.stringify(readMessagesArray));
+    }
+
     navigation.navigate('ChatWindow', {
-      receiverId: 1,
+      receiverId: otherUserId,
     });
   };
 
@@ -18,29 +114,54 @@ const Chat = ({ navigation }: Props) => {
       <View style={styles.header}>
         <Text style={styles.headerText}>Chats</Text>
       </View>
-      <ScrollView style={styles.chats} contentContainerStyle={{ flexGrow: 1 }}>
-        <TouchableOpacity onPress={handleChatPress}>
-          <View style={styles.chat}>
-            <View style={styles.imageContainer}>
-              <Image
-                source={{ uri: 'https://lncimg.lance.com.br/uploads/2024/06/CORINTHIANS-1-1.jpg' }}
-                style={styles.userImage}
-              />
-            </View>
-            <View style={styles.info}>
-              <View style={styles.content}>
-                <Text style={styles.userName}>Joazin</Text>
-                <Text style={styles.messagePreview}>Oi, quer jogar comigo?</Text>
-              </View>
+      <ScrollView
+        style={styles.chats}
+        contentContainerStyle={{ flexGrow: 1 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        {messages
+          .filter((msg) => msg.receiverId !== msg.senderId)
+          .map((message: Message) => {
+            const otherUserId =
+              message.senderId === Number(userId) ? message.receiverId : message.senderId;
+            const user =
+              message.senderId === Number(userId) ? message.messageReceiver : message.messageSender;
 
-              <View style={styles.time}>
-                <Text style={styles.timeText}>Agora</Text>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Você pode adicionar mais chats aqui */}
+            return (
+              <TouchableOpacity
+                key={message.id}
+                onPress={() => handleChatPress(otherUserId, message.id)}>
+                <View style={styles.chat}>
+                  <View style={styles.imageContainer}>
+                    <Image source={{ uri: user.profilePictureUrl }} style={styles.userImage} />
+                  </View>
+                  <View style={styles.info}>
+                    <View style={styles.content}>
+                      <Text style={styles.userName}>{user.username}</Text>
+                      <Text
+                        style={[
+                          styles.messagePreview,
+                          {
+                            fontWeight:
+                              message.senderId === Number(userId)
+                                ? '400'
+                                : message.isRead
+                                  ? '400'
+                                  : '800',
+                          }, // Ajuste aqui
+                        ]}>
+                        {message.senderId === Number(userId)
+                          ? `Você: ${message.content}`
+                          : message.content}
+                      </Text>
+                    </View>
+                    <View style={styles.time}>
+                      <Text style={styles.timeText}>{formatTime(message.createdAt)}</Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
       </ScrollView>
     </View>
   );
