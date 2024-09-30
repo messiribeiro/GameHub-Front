@@ -93,7 +93,10 @@ const FindGamer = ({ navigation }: Props) => {
 
     return (
       <View style={styles.gamerData}>
-        <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
+        <TouchableOpacity
+          onPress={() => navigation.navigate('Profile', { profileUserId: String(item.id) })}>
+          <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
+        </TouchableOpacity>
         <Text style={styles.username}>{item.username}</Text>
         <View style={styles.bio}>
           <Text style={styles.gamesText}>Jogos</Text>
