@@ -10,13 +10,13 @@ import FindGamer from 'screens/findGamer';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
+import PhotoPreview from 'screens/photoPreview';
 import Profile from 'screens/profile';
 
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
 import SignupStep3 from '../screens/signupStep3';
-
 
 
 // Definindo o tipo de parâmetros das rotas
@@ -39,7 +39,7 @@ export type RootStackParamList = {
     receiverName: string; // Add receiverName here
   };
   Camera: undefined;
-
+  PhotoPreview: { photoUri: string };
 
 };
 
@@ -118,6 +118,12 @@ export default function RootStack() {
         <Stack.Screen
           name="Camera"
           component={CameraScreen}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="PhotoPreview"
+          component={PhotoPreview}
           options={{ headerShown: false }}
         />
 
