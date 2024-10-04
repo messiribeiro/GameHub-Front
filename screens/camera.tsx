@@ -1,8 +1,10 @@
+import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { CameraView, CameraType, useCameraPermissions, Camera } from 'expo-camera';
+import ImagePreview from 'components/ImagePreview';
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Album } from 'expo-media-library';
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text, StatusBar, Button, Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -10,17 +12,26 @@ import { RootStackParamList } from '../navigation';
 
 type Props = StackScreenProps<RootStackParamList, 'Camera'>;
 
-const ChatWindow = ({ navigation }: Props) => {
+const CameraScreen = ({ navigation }: Props) => {
   const [facing, setFacing] = useState<CameraType>('front');
   const [permission, requestPermission] = useCameraPermissions();
-
   const [albums, setAlbums] = useState<Album[] | null>(null);
   const [permissionResponse, requestMediaPermission] = MediaLibrary.usePermissions();
   const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
+  const cameraRef = useRef<CameraView>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     getAlbums();
+    setPhoto(null);
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setPhoto(null);
+      getAlbums();
+    }, [])
+  );
 
   if (!permission) {
     return <View />;
@@ -30,7 +41,7 @@ const ChatWindow = ({ navigation }: Props) => {
     return (
       <View style={styles.container}>
         <Text style={styles.message}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="grant permission" />
+        <Button onPress={requestPermission} title="Grant Permission" />
       </View>
     );
   }
@@ -58,33 +69,65 @@ const ChatWindow = ({ navigation }: Props) => {
   }
 
   function toggleCameraFacing() {
-    if (facing == 'back') {
-      setFacing('front');
-    } else {
-      setFacing('back');
+    setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
+  }
+
+  async function takePicture() {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+      if (photo && photo.uri) {
+        // Verifica se photo e photo.uri estão definidos
+        console.log(photo.uri); // Exibe a URI da foto no terminal
+        setLastPhotoUri(photo.uri); // Armazena a URI da foto tirada
+        setPhoto(photo.uri);
+      } else {
+        console.error('Failed to take photo'); // Log de erro
+      }
     }
+  }
+
+  const handleBack = () => {
+    setPhoto(null);
+  };
+
+  function handleForward() {
+    navigation.navigate('EditPostInfo', {
+      photoUri: photo ? photo : 'erro',
+      cameraType: facing,
+    });
   }
 
   return (
     <View style={styles.container}>
-      <StatusBar hidden />
-      <CameraView style={styles.camera} facing={facing}>
-        <View style={styles.screenContainer}>
-          <View style={styles.buttonContainer}>
-            <View style={styles.lastImage}>
-              {lastPhotoUri ? (
-                <Image source={{ uri: lastPhotoUri }} style={styles.lastImage} />
-              ) : (
-                <View style={styles.placeholderImage} />
-              )}
+      {photo ? (
+        <ImagePreview
+          imageUri={photo}
+          onBack={handleBack}
+          onForward={handleForward}
+          cameraFacing={facing}
+        />
+      ) : (
+        <>
+          <StatusBar hidden />
+          <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
+            <View style={styles.screenContainer}>
+              <View style={styles.buttonContainer}>
+                <View style={styles.lastImage}>
+                  {lastPhotoUri ? (
+                    <Image source={{ uri: lastPhotoUri }} style={styles.lastImage} />
+                  ) : (
+                    <View style={styles.placeholderImage} />
+                  )}
+                </View>
+                <TouchableOpacity style={styles.takePhotoButton} onPress={takePicture} />
+                <TouchableOpacity style={styles.toggleFacingButton} onPress={toggleCameraFacing}>
+                  <Icon name="rotate-ccw" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
             </View>
-            <TouchableOpacity style={styles.takePhotoButton} onPress={() => {}} />
-            <TouchableOpacity style={styles.toggleFacingButton} onPress={toggleCameraFacing}>
-              <Icon name="rotate-ccw" size={24} color="#fff" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </CameraView>
+          </CameraView>
+        </>
+      )}
     </View>
   );
 };
@@ -93,9 +136,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
   message: {},
-
   camera: {
     flex: 1,
   },
@@ -120,7 +161,6 @@ const styles = StyleSheet.create({
   toggleFacingButton: {
     alignItems: 'flex-end',
     justifyContent: 'center',
-
     width: 50,
     height: 50,
   },
@@ -130,7 +170,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     borderRadius: 5,
   },
-
   placeholderImage: {
     width: '100%',
     height: '100%',
@@ -139,4 +178,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ChatWindow;
+export default CameraScreen;

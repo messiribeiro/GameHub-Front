@@ -5,6 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import CameraScreen from 'screens/camera';
 import Chat from 'screens/chat';
 import ChatWindow from 'screens/chatWindow';
+import EditPostInfo from 'screens/editPostInfo';
 import EditProfile from 'screens/editProfile';
 import FindGamer from 'screens/findGamer';
 import GameSelect from 'screens/gameSelect';
@@ -16,7 +17,6 @@ import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
 import SignupStep3 from '../screens/signupStep3';
-
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -39,6 +39,7 @@ export type RootStackParamList = {
   };
   Camera: undefined;
   PhotoPreview: { photoUri: string };
+  EditPostInfo: {photoUri: string, cameraType: string};
 
 };
 
@@ -117,6 +118,12 @@ export default function RootStack() {
         <Stack.Screen
           name="Camera"
           component={CameraScreen}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="EditPostInfo"
+          component={EditPostInfo}
           options={{ headerShown: false }}
         />
 

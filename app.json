@@ -6,6 +6,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    
     "experiments": {
       "tsconfigPaths": true
     },
@@ -52,7 +53,8 @@
       "permissions": [
         "CAMERA"
       ],
-      "package": "com.droffyzin.GameHub"
+      "package": "com.droffyzin.GameHub",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "extra": {
       "eas": {
