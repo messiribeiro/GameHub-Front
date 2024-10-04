@@ -10,7 +10,6 @@ import FindGamer from 'screens/findGamer';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
-import PhotoPreview from 'screens/photoPreview';
 import Profile from 'screens/profile';
 
 import Login from '../screens/login';
@@ -121,11 +120,7 @@ export default function RootStack() {
           options={{ headerShown: false }}
         />
 
-        <Stack.Screen
-          name="PhotoPreview"
-          component={PhotoPreview}
-          options={{ headerShown: false }}
-        />
+        
 
 
       </Stack.Navigator>
