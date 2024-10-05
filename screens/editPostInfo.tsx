@@ -1,5 +1,6 @@
-import { useFocusEffect } from '@react-navigation/native'; // Hook para lidar com ciclo de vida de foco
+import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
+import { Video, AVPlaybackStatus } from 'expo-av'; // Importa o Video e o tipo AVPlaybackStatus
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -14,7 +15,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
-import GoBackAlert from '../components/GoBackAlert'; // Certifique-se de importar o seu modal
+import GoBackAlert from '../components/GoBackAlert';
 import { RootStackParamList } from '../navigation';
 
 type Props = StackScreenProps<RootStackParamList, 'EditPostInfo'>;
@@ -22,69 +23,99 @@ type Props = StackScreenProps<RootStackParamList, 'EditPostInfo'>;
 const EditPostInfo = ({ navigation, route }: Props) => {
   const { photoUri, cameraType } = route.params;
   const isFrontCamera = cameraType === 'front';
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef<Video>(null);
+
+  const isVideo = photoUri && photoUri.endsWith('.mp4');
+
   const imageStyle = isFrontCamera ? styles.invertedImagePreview : styles.imagePreview;
 
   const [isModalVisible, setModalVisible] = useState(false);
-  const unsubscribeRef = useRef<(() => void) | null>(null); // Ref para guardar o unsubscribe
+  const unsubscribeRef = useRef<(() => void) | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
-      // Adiciona o listener se não estiver presente
       if (!unsubscribeRef.current) {
         unsubscribeRef.current = navigation.addListener('beforeRemove', (e) => {
-          e.preventDefault(); // Impede a navegação
-          setModalVisible(true); // Exibe o modal de confirmação
+          e.preventDefault();
+          setModalVisible(true);
         });
       }
 
       return () => {
-        // Remove o listener ao desfocar
         if (unsubscribeRef.current) {
-          unsubscribeRef.current(); // Executa o unsubscribe
-          unsubscribeRef.current = null; // Reseta a ref
+          unsubscribeRef.current();
+          unsubscribeRef.current = null;
         }
       };
     }, [navigation])
   );
 
   const handleConfirmExit = () => {
-    setModalVisible(false); // Fecha o modal
+    setModalVisible(false);
 
     setTimeout(() => {
       if (unsubscribeRef.current) {
-        unsubscribeRef.current(); // Remove o listener manualmente
-        unsubscribeRef.current = null; // Limpa a ref
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
       }
 
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Camera' }], // Reseta para a tela da câmera
+        routes: [{ name: 'Camera' }],
       });
-    }, 200); // Pequeno delay para garantir que o modal feche antes de navegar
+    }, 100);
+  };
+
+  const handleTogglePlay = async () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        await videoRef.current.pauseAsync();
+      } else {
+        await videoRef.current.playAsync();
+      }
+      setIsPlaying(!isPlaying);
+    }
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={isFrontCamera ? 0 : 100}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Icon style={styles.arrowLeft} name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.title}>Verifique sua Imagem</Text>
+          <Text style={styles.title}>
+            {isVideo ? 'Verifique seu Vídeo' : 'Verifique sua Imagem'}
+          </Text>
         </View>
         <View style={styles.imageContainer}>
-          {photoUri ? (
-            <Image source={{ uri: photoUri }} style={imageStyle} resizeMode="cover" />
+          {isVideo ? (
+            <Video
+              ref={videoRef}
+              source={{ uri: photoUri }}
+              style={imageStyle}
+              shouldPlay={isPlaying} // Controla a reprodução através do estado
+              isLooping
+              onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
+                if (status.isLoaded && status.didJustFinish) {
+                  setIsPlaying(false); // Reseta o estado de reprodução quando o vídeo termina
+                }
+              }}
+              onTouchEnd={handleTogglePlay} // Alterna a reprodução ao tocar no vídeo
+            />
           ) : (
-            <Text style={styles.text}>Imagem não disponível</Text>
+            <Image source={{ uri: photoUri }} style={imageStyle} resizeMode="cover" />
           )}
         </View>
         <View style={styles.subtitleInput}>
           <TextInput
             style={styles.input}
-            placeholder="Adicione uma legenda à sua imagem"
+            placeholder={`Adicione uma legenda à sua ${isVideo ? 'vídeo' : 'imagem'}`}
             placeholderTextColor="white"
           />
         </View>

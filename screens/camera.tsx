@@ -112,13 +112,17 @@ const CameraScreen = ({ navigation }: Props) => {
           <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
             <View style={styles.screenContainer}>
               <View style={styles.buttonContainer}>
-                <View style={styles.lastImage}>
+                <TouchableOpacity
+                  style={styles.lastImage}
+                  onPress={() => {
+                    navigation.navigate('Galery');
+                  }}>
                   {lastPhotoUri ? (
                     <Image source={{ uri: lastPhotoUri }} style={styles.lastImage} />
                   ) : (
                     <View style={styles.placeholderImage} />
                   )}
-                </View>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.takePhotoButton} onPress={takePicture} />
                 <TouchableOpacity style={styles.toggleFacingButton} onPress={toggleCameraFacing}>
                   <Icon name="rotate-ccw" size={24} color="#fff" />
