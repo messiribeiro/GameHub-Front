@@ -129,9 +129,9 @@ const CameraScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      {videoUri ? ( // Altere para videoUri
+      {videoUri ? (
         <VideoPreview
-          VideoUri={videoUri} // Use videoUri aqui
+          VideoUri={videoUri}
           onBack={handleBack}
           onForward={handleForward}
           cameraFacing={facing}
@@ -180,7 +180,11 @@ const CameraScreen = ({ navigation }: Props) => {
                     <View style={styles.placeholderImage} />
                   )}
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.takePhotoButton} onPress={takePicture} />
+                <TouchableOpacity
+                  style={isRecording ? styles.recordingButton : styles.takePhotoButton}
+                  onPress={takePicture}>
+                  {isRecording ? <View style={styles.squareButton} /> : null}
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.toggleFacingButton} onPress={toggleCameraFacing}>
                   <Icon name="rotate-ccw" size={24} color="#fff" />
                 </TouchableOpacity>
@@ -218,6 +222,8 @@ const styles = StyleSheet.create({
     height: 80,
     backgroundColor: 'white',
     borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   toggleFacingButton: {
     alignItems: 'flex-end',
@@ -249,6 +255,23 @@ const styles = StyleSheet.create({
     gap: 30,
     marginBottom: 20,
     justifyContent: 'center',
+  },
+  recordingButton: {
+    width: 80,
+    height: 80,
+    backgroundColor: 'transparent',
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  squareButton: {
+    width: 25,
+    height: 25,
+    backgroundColor: 'red',
+    position: 'absolute',
+    borderRadius: 5,
   },
 });
 
