@@ -1,4 +1,4 @@
-import { Video, AVPlaybackStatus } from 'expo-av';
+import { Video, ResizeMode } from 'expo-av';
 import { CameraType } from 'expo-camera';
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
@@ -8,7 +8,7 @@ import GoBackAlert from './GoBackAlert';
 
 interface VideoPreviewProps {
   VideoUri: string;
-  onBack: () => void;
+  onBack: () => void; // Assegure-se de que isso esteja sendo passado corretamente
   onForward: () => void;
   cameraFacing: CameraType;
 }
@@ -30,8 +30,9 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
   };
 
   const handleConfirmBack = () => {
+    console.log('Voltando para a tela anterior...'); // Debugging
     setAlertVisible(false);
-    onBack();
+    onBack(); // Aqui chama a função onBack passada como prop
   };
 
   const VideoTransform = cameraFacing === 'front' ? [{ scaleX: -1 }] : [];
@@ -41,6 +42,9 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
       <Video
         source={{ uri: VideoUri }}
         style={[styles.VideoPreview, { transform: VideoTransform }]}
+        shouldPlay // Inicia a reprodução do vídeo automaticamente
+        resizeMode={ResizeMode.COVER} // Ajusta o vídeo para caber no contêiner sem cortar
+        isLooping // O vídeo ficará em loop
       />
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
@@ -55,8 +59,8 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
         visible={isAlertVisible}
         onClose={handleCloseAlert}
         onConfirm={handleConfirmBack}
-        title="Descartar Videom?"
-        message="você perderá a Videom criada"
+        title="Descartar vídeo?"
+        message="Você perderá o vídeo criado."
       />
     </View>
   );
