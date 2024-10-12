@@ -9,9 +9,8 @@ import {
   Image,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -25,10 +24,11 @@ const EditPostInfo = ({ navigation, route }: Props) => {
   const isFrontCamera = cameraType === 'front';
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [duration, setDuration] = useState(0); // Duração total do vídeo em segundos
+  const [currentTime, setCurrentTime] = useState(0); // Tempo atual de reprodução
+
   const videoRef = useRef<Video>(null);
-
   const isVideo = photoUri && photoUri.endsWith('.mp4');
-
   const imageStyle = isFrontCamera ? styles.invertedImagePreview : styles.imagePreview;
 
   const [isModalVisible, setModalVisible] = useState(false);
@@ -79,12 +79,19 @@ const EditPostInfo = ({ navigation, route }: Props) => {
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={isFrontCamera ? 0 : 100}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false} // Removendo barra de rolagem vertical
+      >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Icon style={styles.arrowLeft} name="arrow-left" size={24} color="#fff" />
@@ -95,19 +102,31 @@ const EditPostInfo = ({ navigation, route }: Props) => {
         </View>
         <View style={styles.imageContainer}>
           {isVideo ? (
-            <Video
-              ref={videoRef}
-              source={{ uri: photoUri }}
-              style={imageStyle}
-              shouldPlay={isPlaying} // Controla a reprodução através do estado
-              isLooping
-              onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
-                if (status.isLoaded && status.didJustFinish) {
-                  setIsPlaying(false); // Reseta o estado de reprodução quando o vídeo termina
-                }
-              }}
-              onTouchEnd={handleTogglePlay} // Alterna a reprodução ao tocar no vídeo
-            />
+            <View>
+              <Video
+                ref={videoRef}
+                source={{ uri: photoUri }}
+                style={imageStyle}
+                shouldPlay={isPlaying}
+                isLooping
+                onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
+                  if (status.isLoaded) {
+                    if (status.didJustFinish) {
+                      setIsPlaying(false);
+                    }
+                    // Atualiza a duração total e o tempo atual
+                    setDuration(status.durationMillis ? status.durationMillis / 1000 : 0);
+                    setCurrentTime(status.positionMillis ? status.positionMillis / 1000 : 0);
+                  }
+                }}
+                onTouchEnd={handleTogglePlay}
+              />
+              <View style={styles.videoInfo}>
+                <Text style={styles.timeText}>
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </Text>
+              </View>
+            </View>
           ) : (
             <Image source={{ uri: photoUri }} style={imageStyle} resizeMode="cover" />
           )}
@@ -115,8 +134,9 @@ const EditPostInfo = ({ navigation, route }: Props) => {
         <View style={styles.subtitleInput}>
           <TextInput
             style={styles.input}
-            placeholder={`Adicione uma legenda à sua ${isVideo ? 'vídeo' : 'imagem'}`}
+            placeholder={`Adicione uma legenda ao ${isVideo ? 'seu vídeo' : 'sua imagem'}`}
             placeholderTextColor="white"
+            multiline // Permite múltiplas linhas
           />
         </View>
         <TouchableOpacity style={styles.button}>
@@ -126,13 +146,13 @@ const EditPostInfo = ({ navigation, route }: Props) => {
 
         <GoBackAlert
           visible={isModalVisible}
-          title="Descartar Imagem?"
+          title={isVideo ? 'Descartar Vídeo?' : 'Descartar Imagem?'}
           message="As alterações serão perdidas"
           onClose={() => setModalVisible(false)}
           onConfirm={handleConfirmExit}
         />
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -163,22 +183,34 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   imageContainer: {
-    alignSelf: 'center',
-    marginTop: 80,
-    width: '70%',
-    height: '35%',
+    marginTop: 20,
+    width: '100%',
+    height: '45%',
     alignItems: 'center',
   },
   imagePreview: {
-    width: '100%',
-    aspectRatio: 1,
+    width: 250,
+    height: 400,
     borderRadius: 10,
+    resizeMode: 'cover',
   },
   invertedImagePreview: {
-    width: '100%',
+    height: 400,
     aspectRatio: 1,
     borderRadius: 10,
     transform: [{ scaleX: -1 }],
+  },
+  videoInfo: {
+    position: 'absolute',
+    bottom: 1,
+    right: 1,
+    padding: 5,
+    borderRadius: 5,
+  },
+  timeText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '500',
   },
   subtitleInput: {
     padding: 20,
