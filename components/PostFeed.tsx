@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import api from 'services/api';
@@ -25,6 +33,11 @@ const PostFeed = () => {
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<{ [key: number]: UserData }>({});
   const [mediaError, setMediaError] = useState<{ [key: number]: boolean }>({});
+  const [isMuted, setIsMuted] = useState<{ [key: number]: boolean }>({});
+  const [activeVideo, setActiveVideo] = useState<number | null>(null); // Controle de vídeo ativo
+
+  // Ref para armazenar as referências dos vídeos
+  const videoRefs = useRef<{ [key: number]: any }>({});
 
   useEffect(() => {
     const fetchPostsAndUsers = async () => {
@@ -74,12 +87,45 @@ const PostFeed = () => {
     }));
   };
 
+  // Alternar mute/unmute para um post específico
+  const toggleMute = (postId: number) => {
+    setIsMuted((prevState) => ({
+      ...prevState,
+      [postId]: !prevState[postId], // Alterna entre mutado e desmutado
+    }));
+  };
+
+  // Função para alternar o vídeo ativo
+  const handlePlayPause = (postId: number) => {
+    setActiveVideo(postId);
+  };
+
+  // UseEffect para parar o vídeo quando estiver fora da tela
+  useEffect(() => {
+    const handleScroll = () => {
+      posts.forEach((post) => {
+        const ref = videoRefs.current[post.id];
+        if (ref) {
+          ref.getStatusAsync().then((status: any) => {
+            if (status.isPlaying && post.id !== activeVideo) {
+              ref.pauseAsync();
+            }
+          });
+        }
+      });
+    };
+
+    const intervalId = setInterval(handleScroll, 500); // Verifica a cada 500ms
+
+    return () => clearInterval(intervalId);
+  }, [activeVideo, posts]);
+
   if (loading) {
     return <ActivityIndicator size="large" color="#fff" />;
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {posts.map((post) => (
         <View key={post.id} style={styles.post}>
           <View style={styles.user}>
@@ -95,14 +141,24 @@ const PostFeed = () => {
 
           {/* Renderização condicional para vídeo ou imagem */}
           {isVideo(post.imageUrl) ? (
-            <Video
-              source={{ uri: post.imageUrl }}
-              style={styles.postContent}
-              resizeMode={VideoResizeMode.CONTAIN}
-              shouldPlay={true}
-              useNativeControls
-              onError={() => handleMediaError(post.id)}
-            />
+            <View>
+              <TouchableOpacity onPress={() => handlePlayPause(post.id)}>
+                <Video
+                  ref={(ref) => {
+                    videoRefs.current[post.id] = ref;
+                  }}
+                  source={{ uri: post.imageUrl }}
+                  style={styles.postContent}
+                  resizeMode={VideoResizeMode.CONTAIN}
+                  shouldPlay={activeVideo === post.id} // Toca somente se for o vídeo ativo
+                  isMuted={isMuted[post.id] || false} // Usa o estado de mute
+                  onError={() => handleMediaError(post.id)}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.muteButton} onPress={() => toggleMute(post.id)}>
+                <Icon name={isMuted[post.id] ? 'volume-x' : 'volume-2'} size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
           ) : (
             <Image
               style={styles.postContent}
@@ -128,7 +184,7 @@ const PostFeed = () => {
           </View>
         </View>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
@@ -165,6 +221,14 @@ const styles = StyleSheet.create({
     height: 250,
     backgroundColor: '#000',
     marginTop: 10,
+  },
+  muteButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 25,
+    padding: 8,
   },
   dataView: {
     flexDirection: 'row',
