@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
+import PostList from 'components/PostList'; // Importa o componente PostList
 
 import { RootStackParamList } from '../navigation';
 
@@ -35,9 +36,10 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   const [followStats, setFollowStats] = useState<FollowStats | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [animation] = useState(new Animated.Value(1)); // Animation for follow button
+  const [animation] = useState(new Animated.Value(1)); // Animação para o botão de seguir
   const [userId, setUserId] = useState<string | null>(null);
 
+  // Obtém o ID do usuário logado
   useEffect(() => {
     (async () => {
       const id = await AsyncStorage.getItem('userId');
@@ -45,6 +47,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
     })();
   }, []);
 
+  // Busca os dados do usuário, estatísticas de seguidores e verifica se está seguindo
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -68,11 +71,11 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
 
     const checkIfFollowing = async () => {
       try {
-        const followerId = Number(userId); // Substitua pelo ID do usuário logado
+        const followerId = Number(userId);
         const response = await api.get(
           `/api/friendships/is-following/${followerId}/${profileUserId}`
         );
-        setIsFollowing(response.data.isFollowing); // Atualiza o estado com base na resposta
+        setIsFollowing(response.data.isFollowing);
       } catch (error) {
         console.error('Erro ao verificar se o usuário está seguindo:', error);
       }
@@ -81,41 +84,42 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
     if (userId) {
       getUserData();
       getFollowStats();
-      checkIfFollowing(); // Chame a função ao carregar a página
+      checkIfFollowing();
     }
   }, [profileUserId, userId]);
 
+  // Função para seguir o usuário
   const handleFollowUser = async () => {
     try {
-      // Simulate button click animation
+      // Animação ao clicar no botão
       Animated.sequence([
         Animated.timing(animation, { toValue: 0.9, duration: 100, useNativeDriver: true }),
         Animated.timing(animation, { toValue: 1, duration: 100, useNativeDriver: true }),
       ]).start();
 
       const followerId = Number(userId);
-      const response = await api.post('api/friendships/follow', {
+      await api.post('api/friendships/follow', {
         followerId,
         followingId: Number(profileUserId),
       });
 
-      setIsFollowing(true); // Atualiza o estado após seguir o usuário
+      setIsFollowing(true);
       setFollowStats((prevStats) => ({
         ...prevStats,
         followersCount: (prevStats ? prevStats.followersCount : 0) + 1,
-        followingCount: prevStats?.followingCount || 0,
       }));
     } catch (error) {
       console.error('Erro ao seguir o usuário:', error);
     }
   };
 
-  // Verifica se a imagem de perfil é a padrão e a substitui
+  // Verifica a URL da imagem de perfil e substitui se for a padrão
   const profileImageUrl =
     userData?.profilePictureUrl === 'https://example.com/profile-picture.jpg'
       ? 'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M='
       : userData?.profilePictureUrl;
 
+  // Exibe indicador de carregamento enquanto busca os dados
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -149,10 +153,10 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
             <TouchableOpacity
               style={[
                 styles.followButton,
-                isFollowing && { backgroundColor: '#363636' }, // Change button color if following
+                isFollowing && { backgroundColor: '#363636' },
               ]}
               onPress={handleFollowUser}
-              disabled={isFollowing} // Disable button after following
+              disabled={isFollowing} // Desativa o botão após seguir
             >
               <Text style={styles.text}>{isFollowing ? 'Seguindo' : 'Seguir'}</Text>
             </TouchableOpacity>
@@ -184,15 +188,13 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         </View>
       </View>
       <View style={styles.line} />
-      <View style={styles.posts}>
-        <Text style={styles.messageText}>
-          @{userData ? userData.username : '...'} ainda não fez uma publicação
-        </Text>
-      </View>
+      {/* Componente que exibe as publicações do usuário */}
+      <PostList userId={profileUserId} />
       <TabMenu navigation={navigation} />
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -267,26 +269,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   bio: {
-    color: 'white',
+    color: '#9E9E9E',
   },
   followerText: {
-    color: 'white',
-    fontSize: 13,
+    color: '#9E9E9E',
+    textAlign: 'center',
   },
   line: {
-    width: '100%',
-    height: 1,
-    backgroundColor: '#FFFFFF',
-    opacity: 0.19,
-    marginTop: 15,
-  },
-  posts: {
-    height: '40%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  messageText: {
-    color: 'white',
+    borderBottomColor: '#9E9E9E',
+    borderBottomWidth: 1,
+    marginVertical: 20,
   },
   loadingContainer: {
     flex: 1,
