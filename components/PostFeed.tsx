@@ -99,7 +99,7 @@ const PostFeed = () => {
               source={{ uri: post.imageUrl }}
               style={styles.postContent}
               resizeMode={VideoResizeMode.CONTAIN}
-              shouldPlay={false}
+              shouldPlay={true}
               useNativeControls
               onError={() => handleMediaError(post.id)}
             />
