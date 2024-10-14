@@ -2,20 +2,22 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import CameraScreen from 'screens/camera';
 import Chat from 'screens/chat';
 import ChatWindow from 'screens/chatWindow';
+import EditPostInfo from 'screens/editPostInfo';
+import EditProfile from 'screens/editProfile';
 import FindGamer from 'screens/findGamer';
+import Galery from 'screens/galery';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
 import Profile from 'screens/profile';
-import EditProfile from 'screens/editProfile';
+
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
 import SignupStep3 from '../screens/signupStep3';
-
-
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -36,7 +38,10 @@ export type RootStackParamList = {
     receiverId: number;
     receiverName: string; // Add receiverName here
   };
-
+  Camera: undefined;
+  PhotoPreview: { photoUri: string };
+  EditPostInfo: {photoUri: string, cameraType: string};
+  Galery: undefined;
 
 };
 
@@ -112,7 +117,25 @@ export default function RootStack() {
           options={{ headerShown: false }}
         />
 
+        <Stack.Screen
+          name="Camera"
+          component={CameraScreen}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="EditPostInfo"
+          component={EditPostInfo}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Galery"
+          component={Galery}
+          options={{ headerShown: false }}
+        />
+
         
+
 
       </Stack.Navigator>
     </NavigationContainer>
