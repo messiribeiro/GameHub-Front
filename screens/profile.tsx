@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import TabMenu from 'components/TabMenu';
+import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
@@ -20,7 +21,7 @@ import { RootStackParamList } from '../navigation';
 interface UserData {
   id: number;
   username: string;
-  profilePictureUrl?: string; // Adiciona o campo para a URL da imagem de perfil
+  profilePictureUrl?: string;
 }
 
 interface FollowStats {
@@ -30,8 +31,10 @@ interface FollowStats {
 
 interface Post {
   id: number;
-  imageUrl?: string;
-  videoUrl?: string;
+  content: string;
+  imageUrl: string;
+  authorId: number;
+  createdAt: string;
 }
 
 type Props = StackScreenProps<RootStackParamList, 'Profile'>;
@@ -42,10 +45,10 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   const [followStats, setFollowStats] = useState<FollowStats | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [animation] = useState(new Animated.Value(1)); // Animation for follow button
+  const [animation] = useState(new Animated.Value(1));
   const [userId, setUserId] = useState<string | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]); // Array para armazenar os posts
-  const [error, setError] = useState<string | null>(null); // Para armazenar erros de carregamento
+  const [posts, setPosts] = useState<Post[]>([]);
+  const numColumns = 3; // Definindo o número de colunas
 
   useEffect(() => {
     (async () => {
@@ -89,13 +92,10 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
 
     const fetchPosts = async () => {
       try {
-        console.log(`Fetching posts for user: ${profileUserId}`); // Log para depuração
-        const response = await api.get(`/api/posts/user/${profileUserId}`);
-        console.log(response.data); // Log da resposta da API
-        setPosts(response.data); // Ajuste conforme a estrutura da resposta
-      } catch (err) {
-        setError('Erro ao carregar publicações. Tente novamente.');
-        console.error(err);
+        const response = await api.get(`api/post/user/${profileUserId}`);
+        setPosts(response.data);
+      } catch (error) {
+        console.error('Erro ao buscar posts:', error);
       }
     };
 
@@ -103,7 +103,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
       getUserData();
       getFollowStats();
       checkIfFollowing();
-      fetchPosts(); // Chama a função para buscar os posts
+      fetchPosts();
     }
   }, [profileUserId, userId]);
 
@@ -115,26 +115,46 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
       ]).start();
 
       const followerId = Number(userId);
-      const response = await api.post('api/friendships/follow', {
+      await api.post('api/friendships/follow', {
         followerId,
         followingId: Number(profileUserId),
       });
 
       setIsFollowing(true);
       setFollowStats((prevStats) => ({
+        ...prevStats,
         followersCount: (prevStats ? prevStats.followersCount : 0) + 1,
-        followingCount: prevStats ? prevStats.followingCount : 0, // Garante que followingCount sempre seja definido
+        followingCount: prevStats?.followingCount || 0,
       }));
     } catch (error) {
       console.error('Erro ao seguir o usuário:', error);
     }
   };
 
-  // Verifica se a imagem de perfil é a padrão e a substitui
   const profileImageUrl =
     userData?.profilePictureUrl === 'https://example.com/profile-picture.jpg'
-      ? 'https://www.shutterstock.com/image-vector/profile-default-avatar-icon-user-600nw-2463844171.jpg'
+      ? 'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M='
       : userData?.profilePictureUrl;
+
+  const renderPost = ({ item }: { item: Post }) => {
+    const isVideo = item.imageUrl.endsWith('.mp4');
+
+    return (
+      <View style={styles.post}>
+        {isVideo ? (
+          <Video
+            source={{ uri: item.imageUrl }}
+            style={styles.video}
+            shouldPlay={false}
+            resizeMode={VideoResizeMode.COVER}
+            isLooping
+          />
+        ) : (
+          <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+        )}
+      </View>
+    );
+  };
 
   if (loading) {
     return (
@@ -156,12 +176,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
       </View>
       <View style={styles.userProfileActionsView}>
         <View style={styles.userData}>
-          <Image
-            source={{
-              uri: profileImageUrl,
-            }}
-            style={styles.userImage}
-          />
+          <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
           <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
         </View>
         <View style={styles.buttonsContainer}>
@@ -200,28 +215,14 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         </View>
       </View>
       <View style={styles.line} />
-      <View style={styles.posts}>
-        <FlatList
-          data={posts}
-          renderItem={({ item }) => (
-            <View style={styles.postContainer}>
-              {item.videoUrl ? (
-                <Text style={styles.mediaText}>Vídeo</Text> // Placeholder para o vídeo
-              ) : (
-                <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
-              )}
-            </View>
-          )}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={3} // Três colunas para os posts
-          columnWrapperStyle={styles.columnWrapper}
-        />
-        {posts.length === 0 && (
-          <Text style={styles.messageText}>
-            @{userData ? userData.username : '...'} ainda não fez uma publicação
-          </Text>
-        )}
-      </View>
+      <FlatList
+        data={posts}
+        renderItem={renderPost}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.posts}
+        numColumns={numColumns} // Usando a variável para definir colunas
+        key={`grid-${numColumns}`} // Adicionando uma chave dinâmica
+      />
       <TabMenu navigation={navigation} />
     </View>
   );
@@ -234,7 +235,6 @@ const styles = StyleSheet.create({
   },
   banner: {
     width: '100%',
-    resizeMode: 'cover',
     height: '20%',
   },
   bannerImage: {
@@ -285,63 +285,52 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   text: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '400',
+    color: '#fff',
   },
   profileData: {
-    paddingLeft: 15,
-    paddingRight: 15,
-    height: '8%',
-    marginTop: 30,
-  },
-  followerInformation: {
-    marginTop: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    padding: 10,
+    marginTop: 10,
   },
   bio: {
     color: 'white',
+    marginVertical: 5,
+  },
+  followerInformation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 5,
   },
   followerText: {
     color: 'white',
-    fontSize: 13,
   },
   line: {
-    width: '100%',
     height: 1,
-    backgroundColor: '#FFFFFF',
-    opacity: 0.19,
-    marginTop: 15,
+    backgroundColor: '#444',
+    marginVertical: 10,
   },
-  posts: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  postContainer: {
+  post: {
     flex: 1,
     margin: 5,
-    aspectRatio: 1, // Mantém os posts quadrados
+    aspectRatio: 1,
   },
   postImage: {
     width: '100%',
     height: '100%',
     borderRadius: 10,
   },
-  messageText: {
-    color: 'white',
-    top: -300,
+  video: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#121212',
   },
-  columnWrapper: {
-    justifyContent: 'space-between',
+  posts: {
+    paddingBottom: 20,
   },
-  mediaText: {},
 });
 
 export default Profile;
