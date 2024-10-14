@@ -155,60 +155,6 @@ const Home = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Header navigation={navigation} />
-      <View style={styles.searchContainer}>
-        {isSearchActive ? (
-          <TextInput
-            ref={inputRef}
-            style={styles.searchInput}
-            value={searchQuery}
-            onChangeText={(text) => {
-              setSearchQuery(text);
-              if (text === '') {
-                setIsSearchActive(false); // Desativa a busca se o texto estiver vazio
-              }
-            }}
-            placeholder="Digite o nome do jogo"
-            placeholderTextColor="#aaa"
-            onBlur={() => {
-              if (searchQuery === '') {
-                setIsSearchActive(false); // Desativa a busca se o input perder o foco e estiver vazio
-              }
-            }}
-            onFocus={() => setIsSearchActive(true)}
-            onSubmitEditing={() => {
-              console.log('Busca:', searchQuery);
-            }}
-          />
-        ) : (
-          <TouchableOpacity style={styles.searchBar} onPress={handleSearchIconPress}>
-            <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
-            <Icon name="search" size={20} color="#fff" />
-          </TouchableOpacity>
-        )}
-      </View>
-      <View style={styles.games}>
-        {filteredGames.length > 0 ? (
-          <FlatList
-            horizontal
-            data={filteredGames}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => handleImagePress(item.id)}
-                style={styles.imageContainer}>
-                <Image
-                  source={{ uri: item.gameimageUrl }}
-                  style={styles.image}
-                  onError={() => console.error('Erro ao carregar imagem do jogo')}
-                />
-              </TouchableOpacity>
-            )}
-          />
-        ) : (
-          <Text style={styles.noGamesText}>Nenhum jogo disponível no momento</Text>
-        )}
-      </View>
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id.toString()}
@@ -216,7 +162,65 @@ const Home = ({ navigation }: Props) => {
         renderItem={({ item }) => <PostFeed post={item} />}
         onEndReached={loadMorePosts}
         onEndReachedThreshold={0.1}
-        keyboardShouldPersistTaps="handled" // Mantém o teclado aberto ao interagir
+        keyboardShouldPersistTaps="handled"
+        ListHeaderComponent={
+          <>
+            <Header navigation={navigation} />
+            <View style={styles.searchContainer}>
+              {isSearchActive ? (
+                <TextInput
+                  ref={inputRef}
+                  style={styles.searchInput}
+                  value={searchQuery}
+                  onChangeText={(text) => {
+                    setSearchQuery(text);
+                    if (text === '') {
+                      setIsSearchActive(false);
+                    }
+                  }}
+                  placeholder="Digite o nome do jogo"
+                  placeholderTextColor="#aaa"
+                  onBlur={() => {
+                    if (searchQuery === '') {
+                      setIsSearchActive(false);
+                    }
+                  }}
+                  onFocus={() => setIsSearchActive(true)}
+                  onSubmitEditing={() => {
+                    console.log('Busca:', searchQuery);
+                  }}
+                />
+              ) : (
+                <TouchableOpacity style={styles.searchBar} onPress={handleSearchIconPress}>
+                  <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
+                  <Icon name="search" size={20} color="#fff" />
+                </TouchableOpacity>
+              )}
+            </View>
+            <View style={styles.games}>
+              {filteredGames.length > 0 ? (
+                <FlatList
+                  horizontal
+                  data={filteredGames}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() => handleImagePress(item.id)}
+                      style={styles.imageContainer}>
+                      <Image
+                        source={{ uri: item.gameimageUrl }}
+                        style={styles.image}
+                        onError={() => console.error('Erro ao carregar imagem do jogo')}
+                      />
+                    </TouchableOpacity>
+                  )}
+                />
+              ) : (
+                <Text style={styles.noGamesText}>Nenhum jogo disponível no momento</Text>
+              )}
+            </View>
+          </>
+        }
       />
       <TabMenu navigation={navigation} />
     </View>
