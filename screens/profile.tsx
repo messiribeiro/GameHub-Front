@@ -14,6 +14,7 @@ import {
   FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import Verified from 'react-native-vector-icons/MaterialIcons';
 import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
@@ -45,6 +46,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   const [followStats, setFollowStats] = useState<FollowStats | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // State for refreshing
   const [animation] = useState(new Animated.Value(1));
   const [userId, setUserId] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -57,55 +59,41 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
     })();
   }, []);
 
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get(`api/users/${profileUserId}`);
+      setUserData(response.data);
+
+      const followStatsResponse = await api.get(`/api/friendships/stats/${profileUserId}`);
+      setFollowStats(followStatsResponse.data);
+
+      const followerId = Number(userId);
+      const isFollowingResponse = await api.get(
+        `/api/friendships/is-following/${followerId}/${profileUserId}`
+      );
+      setIsFollowing(isFollowingResponse.data.isFollowing);
+
+      const postsResponse = await api.get(`api/post/user/${profileUserId}`);
+      setPosts(postsResponse.data);
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false); // End refreshing
+    }
+  };
+
   useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const response = await api.get(`api/users/${profileUserId}`);
-        setUserData(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar dados do usuário:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const getFollowStats = async () => {
-      try {
-        const response = await api.get(`/api/friendships/stats/${profileUserId}`);
-        setFollowStats(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar estatísticas de seguidores:', error);
-      }
-    };
-
-    const checkIfFollowing = async () => {
-      try {
-        const followerId = Number(userId);
-        const response = await api.get(
-          `/api/friendships/is-following/${followerId}/${profileUserId}`
-        );
-        setIsFollowing(response.data.isFollowing);
-      } catch (error) {
-        console.error('Erro ao verificar se o usuário está seguindo:', error);
-      }
-    };
-
-    const fetchPosts = async () => {
-      try {
-        const response = await api.get(`api/post/user/${profileUserId}`);
-        setPosts(response.data);
-      } catch (error) {
-        console.error('Erro ao buscar posts:', error);
-      }
-    };
-
     if (userId) {
-      getUserData();
-      getFollowStats();
-      checkIfFollowing();
-      fetchPosts();
+      fetchData();
     }
   }, [profileUserId, userId]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
 
   const handleFollowUser = async () => {
     try {
@@ -177,7 +165,12 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
       <View style={styles.userProfileActionsView}>
         <View style={styles.userData}>
           <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
-          <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
+          <View style={styles.usernameContainer}>
+            <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
+            {userData?.username === 'droffyzin' && (
+              <Verified name="verified" size={16} color="#4CAF50" style={styles.verifiedIcon} />
+            )}
+          </View>
         </View>
         <View style={styles.buttonsContainer}>
           <Animated.View style={{ transform: [{ scale: animation }] }}>
@@ -220,8 +213,10 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         renderItem={renderPost}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.posts}
-        numColumns={numColumns} // Usando a variável para definir colunas
-        key={`grid-${numColumns}`} // Adicionando uma chave dinâmica
+        numColumns={numColumns}
+        key={`grid-${numColumns}`}
+        refreshing={refreshing} // Set refreshing state
+        onRefresh={handleRefresh} // Handle refresh
       />
       <TabMenu navigation={navigation} />
     </View>
@@ -330,6 +325,16 @@ const styles = StyleSheet.create({
   },
   posts: {
     paddingBottom: 20,
+  },
+  usernameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  verifiedIcon: {
+    top: 3,
+    left: -8,
   },
 });
 

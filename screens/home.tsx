@@ -71,17 +71,15 @@ const Home = ({ navigation }: Props) => {
 
   const fetchPosts = async () => {
     setRefreshing(true);
-    setLoading(true); // Inicia o loading
     try {
       const response = await api.get('/api/post');
-      const sortedPosts = response.data.reverse().slice(0, postLimit);
-      setPosts(sortedPosts);
+      const sortedPosts = response.data.reverse(); // Pega todos os posts
+      setPosts(sortedPosts.slice(0, postLimit)); // Apenas os primeiros posts
       setHasMorePosts(response.data.length > postLimit);
     } catch (error) {
       console.error('Erro ao carregar posts:', error);
     } finally {
       setRefreshing(false);
-      setLoading(false); // Termina o loading
     }
   };
 
@@ -131,14 +129,16 @@ const Home = ({ navigation }: Props) => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchPosts();
-    if (userId) {
-      await fetchUserGames();
-      await fetchAllGames();
+    try {
+      const response = await api.get('/api/post');
+      const newPosts = response.data.reverse().slice(0, postLimit);
+      setPosts(newPosts); // Atualiza apenas os posts
+    } catch (error) {
+      console.error('Erro ao atualizar posts:', error);
+    } finally {
+      setRefreshing(false);
     }
-    setRefreshing(false);
   };
-
   const handleImagePress = (gameId: number) => {
     navigation.navigate('FindGamer', { gameId });
   };
@@ -324,7 +324,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     paddingTop: 60,
-    // Adicione qualquer estilo adicional que você queira
   },
   searchBar: {
     flexDirection: 'row',
@@ -339,7 +338,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Para escurecer o fundo
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
 });
+
 export default Home;
