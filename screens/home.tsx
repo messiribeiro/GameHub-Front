@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import Header from 'components/Header';
+import PostFeed from 'components/PostFeed';
 import TabMenu from 'components/TabMenu';
 import React, { useEffect, useState } from 'react';
 import {
@@ -8,15 +9,13 @@ import {
   Text,
   Image,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
-  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
-import PostFeed from 'components/PostFeed'; // Componente separado para o feed de posts
 
 import { RootStackParamList } from '../navigation';
 
@@ -28,12 +27,41 @@ interface Game {
   gameimageUrl: string;
 }
 
+interface Post {
+  id: number;
+  content: string;
+  imageUrl: string;
+  authorId: number;
+  createdAt: string;
+}
+
 const Home = ({ navigation }: Props) => {
   const [userGames, setUserGames] = useState<Game[]>([]);
   const [allGames, setAllGames] = useState<Game[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState<Post[]>([]); // Defina o tipo para posts
+  const [postLimit, setPostLimit] = useState(5); // Limite inicial
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+
+  const fetchPosts = async () => {
+    setRefreshing(true);
+    try {
+      const response = await api.get('/api/post');
+      const sortedPosts = response.data.reverse().slice(0, postLimit); // Inverte a ordem antes de aplicar o limite
+      setPosts(sortedPosts);
+      setHasMorePosts(response.data.length > postLimit); // Verifica se há mais posts
+    } catch (error) {
+      console.error('Erro ao carregar posts:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -76,6 +104,7 @@ const Home = ({ navigation }: Props) => {
   }, [userId]);
 
   const onRefresh = async () => {
+    fetchPosts();
     setRefreshing(true);
     if (userId) {
       await fetchUserGames();
@@ -86,6 +115,15 @@ const Home = ({ navigation }: Props) => {
 
   const handleImagePress = (gameId: number) => {
     navigation.navigate('FindGamer', { gameId });
+  };
+
+  const loadMorePosts = async () => {
+    if (hasMorePosts) {
+      const response = await api.get('/api/post');
+      const newPosts = response.data.reverse().slice(posts.length, posts.length + postLimit); // Inverte a ordem
+      setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+      setHasMorePosts(newPosts.length > 0);
+    }
   };
 
   const combinedGames = [
@@ -104,36 +142,46 @@ const Home = ({ navigation }: Props) => {
 
   return (
     <>
-      <ScrollView
+      <FlatList
         style={styles.container}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <Header navigation={navigation} />
-        <View style={styles.searchContainer}>
-          <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
-          <Icon name="search" size={24} color="#fff" />
-        </View>
-        <View style={styles.games}>
-          {combinedGames.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-              {combinedGames.map((game, index) => (
-                <TouchableOpacity
-                  key={index}
-                  onPress={() => handleImagePress(game.id)}
-                  style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: game.gameimageUrl }}
-                    style={styles.image}
-                    onError={() => console.error('Erro ao carregar imagem do jogo')}
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          ) : (
-            <Text style={styles.noGamesText}>Nenhum jogo disponível no momento</Text>
-          )}
-        </View>
-        <PostFeed />
-      </ScrollView>
+        data={posts}
+        keyExtractor={(item) => item.id.toString()}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListHeaderComponent={() => (
+          <>
+            <Header navigation={navigation} />
+            <View style={styles.searchContainer}>
+              <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
+              <Icon name="search" size={24} color="#fff" />
+            </View>
+            <View style={styles.games}>
+              {combinedGames.length > 0 ? (
+                <FlatList
+                  horizontal
+                  data={combinedGames}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() => handleImagePress(item.id)}
+                      style={styles.imageContainer}>
+                      <Image
+                        source={{ uri: item.gameimageUrl }}
+                        style={styles.image}
+                        onError={() => console.error('Erro ao carregar imagem do jogo')}
+                      />
+                    </TouchableOpacity>
+                  )}
+                />
+              ) : (
+                <Text style={styles.noGamesText}>Nenhum jogo disponível no momento</Text>
+              )}
+            </View>
+          </>
+        )}
+        renderItem={({ item }) => <PostFeed post={item} />}
+        onEndReached={loadMorePosts}
+        onEndReachedThreshold={0.1}
+      />
       <TabMenu navigation={navigation} />
     </>
   );
@@ -143,10 +191,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    width: '100%',
-    height: '100%',
     paddingTop: '10%',
-    color: 'white',
     paddingBottom: 40,
   },
   loadingContainer: {
@@ -173,9 +218,8 @@ const styles = StyleSheet.create({
   games: {
     paddingLeft: '2%',
     paddingRight: '2%',
-  },
-  scrollView: {
-    paddingTop: 15,
+    marginBottom: 30,
+    marginTop: 10,
   },
   imageContainer: {
     marginRight: 10,
