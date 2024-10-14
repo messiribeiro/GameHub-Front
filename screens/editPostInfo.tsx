@@ -1,7 +1,10 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
-import { Video, AVPlaybackStatus } from 'expo-av'; // Importa o Video e o tipo AVPlaybackStatus
-import React, { useState, useRef } from 'react';
+import axios from 'axios';
+import { Video, AVPlaybackStatus } from 'expo-av';
+import * as FileSystem from 'expo-file-system'; // Para manipular arquivos no Expo
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -10,9 +13,10 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Platform,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import api from 'services/api'; // Importando o arquivo da API configurado
 
 import GoBackAlert from '../components/GoBackAlert';
 import { RootStackParamList } from '../navigation';
@@ -22,10 +26,13 @@ type Props = StackScreenProps<RootStackParamList, 'EditPostInfo'>;
 const EditPostInfo = ({ navigation, route }: Props) => {
   const { photoUri, cameraType } = route.params;
   const isFrontCamera = cameraType === 'front';
-
+  const [userId, setUserId] = useState<null | string>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState(0); // Duração total do vídeo em segundos
-  const [currentTime, setCurrentTime] = useState(0); // Tempo atual de reprodução
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [caption, setCaption] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [postSubmitted, setPostSubmitted] = useState(false); // Adiciona esta variável de estado
 
   const videoRef = useRef<Video>(null);
   const isVideo = photoUri && photoUri.endsWith('.mp4');
@@ -34,13 +41,33 @@ const EditPostInfo = ({ navigation, route }: Props) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const unsubscribeRef = useRef<(() => void) | null>(null);
 
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const id = await AsyncStorage.getItem('userId');
+        console.log('id do usuário', id);
+        if (id) {
+          setUserId(id);
+        }
+      } catch (error) {
+        console.error('Erro ao obter userId', error);
+      }
+    };
+
+    fetchUserId();
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
-      if (!unsubscribeRef.current) {
-        unsubscribeRef.current = navigation.addListener('beforeRemove', (e) => {
+      const handleBeforeRemove = (e: any) => {
+        if (!postSubmitted) {
           e.preventDefault();
           setModalVisible(true);
-        });
+        }
+      };
+
+      if (!unsubscribeRef.current) {
+        unsubscribeRef.current = navigation.addListener('beforeRemove', handleBeforeRemove);
       }
 
       return () => {
@@ -49,23 +76,32 @@ const EditPostInfo = ({ navigation, route }: Props) => {
           unsubscribeRef.current = null;
         }
       };
-    }, [navigation])
+    }, [navigation, postSubmitted]) // Adiciona postSubmitted como dependência
   );
 
   const handleConfirmExit = () => {
     setModalVisible(false);
 
-    setTimeout(() => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-        unsubscribeRef.current = null;
-      }
-
+    if (postSubmitted) {
+      // Se o post foi enviado, redirecione para a tela Home
       navigation.reset({
         index: 0,
-        routes: [{ name: 'Camera' }],
+        routes: [{ name: 'Home' }],
       });
-    }, 100);
+    } else {
+      // Se o post não foi enviado, apenas volte
+      setTimeout(() => {
+        if (unsubscribeRef.current) {
+          unsubscribeRef.current();
+          unsubscribeRef.current = null;
+        }
+
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Camera' }],
+        });
+      }, 100);
+    }
   };
 
   const handleTogglePlay = async () => {
@@ -85,13 +121,93 @@ const EditPostInfo = ({ navigation, route }: Props) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  const handleSubmitPost = async () => {
+    const formData = new FormData();
+
+    if (userId !== null && userId !== undefined) {
+      formData.append('authorId', userId.toString());
+    } else {
+      console.error('userId não está definido.');
+      return;
+    }
+
+    formData.append('content', caption);
+
+    if (photoUri) {
+      const fileInfo = await FileSystem.getInfoAsync(photoUri);
+      if (fileInfo.exists) {
+        const fileExtension = fileInfo.uri.split('.').pop()?.toLowerCase();
+
+        if (!fileExtension) {
+          console.error('Não foi possível determinar a extensão do arquivo.');
+          return;
+        }
+
+        let fileType = '';
+        if (fileExtension === 'png') {
+          fileType = 'image/png';
+        } else if (fileExtension === 'jpeg' || fileExtension === 'jpg') {
+          fileType = 'image/jpeg';
+        } else {
+          console.error('Tipo de arquivo não suportado');
+          return;
+        }
+
+        const file = {
+          uri: photoUri,
+          name: `arquivoDoUser${userId}.${fileExtension}`,
+          type: fileType,
+        };
+
+        formData.append('file', file as any);
+      } else {
+        console.error('Arquivo não existe no caminho especificado.');
+        return;
+      }
+    } else {
+      console.error('photoUri não está definido.');
+      return;
+    }
+
+    console.log('Caption:', caption);
+
+    try {
+      setIsSubmitting(true);
+      const response = await axios.post(
+        'https://gamehub-back-6h0k.onrender.com/api/post/',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      console.log('Post criado com sucesso:', response.data);
+      setPostSubmitted(true); // Define postSubmitted como true
+      // Remova o listener de navegação
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current();
+        unsubscribeRef.current = null;
+      }
+      // Navegar diretamente para Home
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Home' }],
+      });
+    } catch (error) {
+      console.log('erro: ', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false} // Removendo barra de rolagem vertical
-      >
+        showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <Icon style={styles.arrowLeft} name="arrow-left" size={24} color="#fff" />
@@ -114,7 +230,6 @@ const EditPostInfo = ({ navigation, route }: Props) => {
                     if (status.didJustFinish) {
                       setIsPlaying(false);
                     }
-                    // Atualiza a duração total e o tempo atual
                     setDuration(status.durationMillis ? status.durationMillis / 1000 : 0);
                     setCurrentTime(status.positionMillis ? status.positionMillis / 1000 : 0);
                   }
@@ -136,11 +251,13 @@ const EditPostInfo = ({ navigation, route }: Props) => {
             style={styles.input}
             placeholder={`Adicione uma legenda ao ${isVideo ? 'seu vídeo' : 'sua imagem'}`}
             placeholderTextColor="white"
-            multiline // Permite múltiplas linhas
+            value={caption}
+            onChangeText={setCaption}
+            multiline
           />
         </View>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.text}>Avançar</Text>
+        <TouchableOpacity style={styles.button} onPress={handleSubmitPost} disabled={isSubmitting}>
+          <Text style={styles.text}>{isSubmitting ? 'Enviando...' : 'Avançar'}</Text>
           <Icon name="arrow-right" size={24} color="#fff" />
         </TouchableOpacity>
 
@@ -155,7 +272,6 @@ const EditPostInfo = ({ navigation, route }: Props) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

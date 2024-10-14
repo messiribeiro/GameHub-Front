@@ -15,7 +15,12 @@ const TabMenu: React.FC<Props> = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity>
-        <Icon name="plus-circle" size={26} color="#000000" />
+        <Icon
+          name="plus-circle"
+          onPress={() => navigation.navigate('Camera')}
+          size={26}
+          color="#000000"
+        />
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Chat')}>
