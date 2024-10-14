@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import CommentSection from 'components/CommentSection'; // Importe o componente CommentSection
+import CommentSection from 'components/CommentSection';
 import Header from 'components/Header';
 import PostFeed from 'components/PostFeed';
 import TabMenu from 'components/TabMenu';
@@ -16,7 +16,6 @@ import {
   ActivityIndicator,
   TextInput,
   Modal,
-  TouchableWithoutFeedback,
   PanResponder,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
@@ -54,24 +53,25 @@ const Home = ({ navigation }: Props) => {
   const inputRef = useRef<TextInput | null>(null);
   const uniquePosts = [...new Map(posts.map((post) => [post.id, post])).values()];
 
-  // Estado do modal
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return gestureState.dy > 20; // Detecta movimento para baixo
+        return gestureState.dy > 20;
       },
       onPanResponderRelease: (evt, gestureState) => {
         if (gestureState.dy > 50) {
-          setModalVisible(false); // Fecha o modal se o gesto for para baixo
+          setModalVisible(false);
         }
       },
     })
   ).current;
+
   const fetchPosts = async () => {
     setRefreshing(true);
+    setLoading(true); // Inicia o loading
     try {
       const response = await api.get('/api/post');
       const sortedPosts = response.data.reverse().slice(0, postLimit);
@@ -81,6 +81,7 @@ const Home = ({ navigation }: Props) => {
       console.error('Erro ao carregar posts:', error);
     } finally {
       setRefreshing(false);
+      setLoading(false); // Termina o loading
     }
   };
 
@@ -129,8 +130,8 @@ const Home = ({ navigation }: Props) => {
   }, [userId]);
 
   const onRefresh = async () => {
-    fetchPosts();
     setRefreshing(true);
+    await fetchPosts();
     if (userId) {
       await fetchUserGames();
       await fetchAllGames();
@@ -166,8 +167,8 @@ const Home = ({ navigation }: Props) => {
   };
 
   const handleCommentButtonClick = (postId: number) => {
-    setSelectedPostId(postId); // Define o ID do post selecionado
-    setModalVisible(true); // Abre o modal
+    setSelectedPostId(postId);
+    setModalVisible(true);
   };
 
   if (loading) {
@@ -255,8 +256,6 @@ const Home = ({ navigation }: Props) => {
         }
       />
       <TabMenu navigation={navigation} />
-
-      {/* Modal para Comentários */}
       <Modal
         animationType="slide"
         transparent
@@ -343,5 +342,4 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Para escurecer o fundo
   },
 });
-
 export default Home;

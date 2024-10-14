@@ -110,9 +110,8 @@ const FindGamer = ({ navigation }: Props) => {
     }
   }, [currentGameId]);
 
-  // URL da imagem padrão
   const defaultImageUrl =
-    'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M=';
+    'https://www.shutterstock.com/image-vector/profile-default-avatar-icon-user-600nw-2463844171.jpg';
 
   const renderUser: ListRenderItem<User> = ({ item }) => {
     // Verifica a URL da imagem e substitui, se necessário

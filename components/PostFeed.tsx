@@ -6,8 +6,9 @@ import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Importando MaterialIcons
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import api from 'services/api';
+
 interface Post {
   id: number;
   content: string;
@@ -25,11 +26,10 @@ interface UserData {
 interface PostFeedProps {
   post: Post;
   navigation: any;
-  onCommentButtonClick: any;
+  onCommentButtonClick: (postId: number) => void;
 }
 
 const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonClick }) => {
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
   const [mediaError, setMediaError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -50,7 +50,6 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
     const { _count } = response.data;
     setLikesCount(_count.likes);
     setCommentsCount(_count.comments);
-    setLoading(false);
   };
 
   const handleLike = async () => {
@@ -59,16 +58,14 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
 
     try {
       await api.post(`/api/post/${post.id}/like`, { userId });
-      // Incrementa o contador de likes
       setLikesCount((prev) => prev + 1);
       setHasLiked(true);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
           if (error.response.status === 409) {
-            // O usuário já curtiu, então descurte
-            setLikesCount((prev) => Math.max(prev - 1, 0)); // Decrementa o contador, mas não deixa ficar negativo
-            setHasLiked(false); // Atualiza o estado para indicar que o usuário não curtiu mais
+            setLikesCount((prev) => Math.max(prev - 1, 0));
+            setHasLiked(false);
             console.log('Usuário descurtiu este post.');
           } else {
             console.error('Erro ao dar like:', error.response.data);
@@ -81,6 +78,7 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
       }
     }
   };
+
   useEffect(() => {
     const getUserId = async () => {
       const id = await AsyncStorage.getItem('userId');
@@ -122,9 +120,11 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
     }
   };
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#fff" />;
-  }
+  const navigateToFullScreen = () => {
+    if (isVideo(post.imageUrl)) {
+      navigation.navigate('FullScreen', { postId: post.id });
+    }
+  };
 
   return (
     <View style={styles.post}>
@@ -144,12 +144,12 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
       <Text style={styles.postTitle}>{post.content}</Text>
       {isVideo(post.imageUrl) ? (
         <View>
-          <TouchableOpacity onPress={handlePlayPause}>
+          <TouchableOpacity onPress={navigateToFullScreen}>
             <Video
               ref={videoRef}
               source={{ uri: post.imageUrl }}
               style={styles.postContent}
-              resizeMode={VideoResizeMode.CONTAIN}
+              resizeMode={VideoResizeMode.COVER}
               shouldPlay={activeVideo === post.id}
               isMuted={isMuted}
               onError={handleMediaError}
@@ -229,7 +229,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 10,
     right: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     borderRadius: 25,
     padding: 8,
   },

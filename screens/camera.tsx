@@ -119,10 +119,14 @@ const CameraScreen = ({ navigation }: Props) => {
     setPhoto(null);
     setVideoUri(null);
   };
-
   function handleForward() {
+    console.log(videoUri); // Isso vai mostrar a URI do vídeo corretamente
+
+    // Verifica se está no modo de vídeo e se a URI do vídeo é válida
+    const uriToSend = isVideoMode && videoUri ? videoUri : photo;
+
     navigation.navigate('EditPostInfo', {
-      photoUri: photo ? photo : 'erro',
+      photoUri: uriToSend || 'erro', // Se nenhuma URI válida, envia 'erro'
       cameraType: facing,
     });
   }

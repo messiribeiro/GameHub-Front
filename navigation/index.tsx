@@ -8,6 +8,7 @@ import ChatWindow from 'screens/chatWindow';
 import EditPostInfo from 'screens/editPostInfo';
 import EditProfile from 'screens/editProfile';
 import FindGamer from 'screens/findGamer';
+import FullScreen from 'screens/fullScreen';
 import Galery from 'screens/galery';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
@@ -42,6 +43,7 @@ export type RootStackParamList = {
   PhotoPreview: { photoUri: string };
   EditPostInfo: {photoUri: string, cameraType: string};
   Galery: undefined;
+  FullScreen: {postId: string};
 
 };
 
@@ -131,6 +133,11 @@ export default function RootStack() {
         <Stack.Screen
           name="Galery"
           component={Galery}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FullScreen"
+          component={FullScreen}
           options={{ headerShown: false }}
         />
 

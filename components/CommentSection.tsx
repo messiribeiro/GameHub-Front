@@ -114,9 +114,9 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
                 <Text style={styles.commentText}>{item.content}</Text>
               </View>
             </View>
-            <View style={styles.likeButton}>
+            {/* <View style={styles.likeButton}>
               <Icon name="heart" size={15} color="#fff" />
-            </View>
+            </View> */}
           </View>
         )}
       />
@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
   },
   commentText: {
     color: 'white',
+    width: '95%',
   },
   inputContainer: {
     position: 'absolute',
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    width: '90%',
+    width: '80%',
     color: 'white',
     paddingLeft: 10,
     alignSelf: 'center',

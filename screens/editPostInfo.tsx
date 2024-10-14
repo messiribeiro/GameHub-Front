@@ -45,7 +45,7 @@ const EditPostInfo = ({ navigation, route }: Props) => {
     const fetchUserId = async () => {
       try {
         const id = await AsyncStorage.getItem('userId');
-        console.log('id do usuário', id);
+        console.log('uri do vídeo', photoUri);
         if (id) {
           setUserId(id);
         }
@@ -137,21 +137,21 @@ const EditPostInfo = ({ navigation, route }: Props) => {
       const fileInfo = await FileSystem.getInfoAsync(photoUri);
       if (fileInfo.exists) {
         const fileExtension = fileInfo.uri.split('.').pop()?.toLowerCase();
-
-        if (!fileExtension) {
-          console.error('Não foi possível determinar a extensão do arquivo.');
-          return;
-        }
+        console.log('Extensão do arquivo:', fileExtension); // Verifique a extensão do arquivo
 
         let fileType = '';
         if (fileExtension === 'png') {
           fileType = 'image/png';
         } else if (fileExtension === 'jpeg' || fileExtension === 'jpg') {
           fileType = 'image/jpeg';
+        } else if (fileExtension === 'mp4') {
+          fileType = 'video/mp4'; // Suporte para vídeo
         } else {
-          console.error('Tipo de arquivo não suportado');
+          console.error('Tipo de arquivo não suportado:', fileExtension);
           return;
         }
+
+        console.log('Tipo do arquivo:', fileType); // Imprimir o tipo do arquivo
 
         const file = {
           uri: photoUri,
