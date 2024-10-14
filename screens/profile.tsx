@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Animated,
+  FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
@@ -27,6 +28,12 @@ interface FollowStats {
   followingCount: number;
 }
 
+interface Post {
+  id: number;
+  imageUrl?: string;
+  videoUrl?: string;
+}
+
 type Props = StackScreenProps<RootStackParamList, 'Profile'>;
 
 const Profile: React.FC<Props> = ({ navigation, route }) => {
@@ -37,6 +44,8 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [animation] = useState(new Animated.Value(1)); // Animation for follow button
   const [userId, setUserId] = useState<string | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]); // Array para armazenar os posts
+  const [error, setError] = useState<string | null>(null); // Para armazenar erros de carregamento
 
   useEffect(() => {
     (async () => {
@@ -68,26 +77,38 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
 
     const checkIfFollowing = async () => {
       try {
-        const followerId = Number(userId); // Substitua pelo ID do usuário logado
+        const followerId = Number(userId);
         const response = await api.get(
           `/api/friendships/is-following/${followerId}/${profileUserId}`
         );
-        setIsFollowing(response.data.isFollowing); // Atualiza o estado com base na resposta
+        setIsFollowing(response.data.isFollowing);
       } catch (error) {
         console.error('Erro ao verificar se o usuário está seguindo:', error);
+      }
+    };
+
+    const fetchPosts = async () => {
+      try {
+        console.log(`Fetching posts for user: ${profileUserId}`); // Log para depuração
+        const response = await api.get(`/api/posts/user/${profileUserId}`);
+        console.log(response.data); // Log da resposta da API
+        setPosts(response.data); // Ajuste conforme a estrutura da resposta
+      } catch (err) {
+        setError('Erro ao carregar publicações. Tente novamente.');
+        console.error(err);
       }
     };
 
     if (userId) {
       getUserData();
       getFollowStats();
-      checkIfFollowing(); // Chame a função ao carregar a página
+      checkIfFollowing();
+      fetchPosts(); // Chama a função para buscar os posts
     }
   }, [profileUserId, userId]);
 
   const handleFollowUser = async () => {
     try {
-      // Simulate button click animation
       Animated.sequence([
         Animated.timing(animation, { toValue: 0.9, duration: 100, useNativeDriver: true }),
         Animated.timing(animation, { toValue: 1, duration: 100, useNativeDriver: true }),
@@ -99,11 +120,10 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         followingId: Number(profileUserId),
       });
 
-      setIsFollowing(true); // Atualiza o estado após seguir o usuário
+      setIsFollowing(true);
       setFollowStats((prevStats) => ({
-        ...prevStats,
         followersCount: (prevStats ? prevStats.followersCount : 0) + 1,
-        followingCount: prevStats?.followingCount || 0,
+        followingCount: prevStats ? prevStats.followingCount : 0, // Garante que followingCount sempre seja definido
       }));
     } catch (error) {
       console.error('Erro ao seguir o usuário:', error);
@@ -113,7 +133,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   // Verifica se a imagem de perfil é a padrão e a substitui
   const profileImageUrl =
     userData?.profilePictureUrl === 'https://example.com/profile-picture.jpg'
-      ? 'https://media.istockphoto.com/id/1185655985/vector/gamer-portrait-video-games-background-glitch-style-player-vector-illustration-online-user.jpg?s=612x612&w=0&k=20&c=uoy0NDqomF2RzJdrNFQM25WwVahjRggjDHYhQoNnx3M='
+      ? 'https://www.shutterstock.com/image-vector/profile-default-avatar-icon-user-600nw-2463844171.jpg'
       : userData?.profilePictureUrl;
 
   if (loading) {
@@ -138,7 +158,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.userData}>
           <Image
             source={{
-              uri: profileImageUrl, // Utiliza a URL verificada
+              uri: profileImageUrl,
             }}
             style={styles.userImage}
           />
@@ -147,13 +167,9 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.buttonsContainer}>
           <Animated.View style={{ transform: [{ scale: animation }] }}>
             <TouchableOpacity
-              style={[
-                styles.followButton,
-                isFollowing && { backgroundColor: '#363636' }, // Change button color if following
-              ]}
+              style={[styles.followButton, isFollowing && { backgroundColor: '#363636' }]}
               onPress={handleFollowUser}
-              disabled={isFollowing} // Disable button after following
-            >
+              disabled={isFollowing}>
               <Text style={styles.text}>{isFollowing ? 'Seguindo' : 'Seguir'}</Text>
             </TouchableOpacity>
           </Animated.View>
@@ -180,19 +196,37 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         <View style={styles.followerInformation}>
           <Text style={styles.followerText}>{followStats?.followingCount || 0} seguindo</Text>
           <Text style={styles.followerText}>{followStats?.followersCount || 0} seguidores</Text>
-          <Text style={styles.followerText}>0 Publicações</Text>
+          <Text style={styles.followerText}>{posts.length} Publicações</Text>
         </View>
       </View>
       <View style={styles.line} />
       <View style={styles.posts}>
-        <Text style={styles.messageText}>
-          @{userData ? userData.username : '...'} ainda não fez uma publicação
-        </Text>
+        <FlatList
+          data={posts}
+          renderItem={({ item }) => (
+            <View style={styles.postContainer}>
+              {item.videoUrl ? (
+                <Text style={styles.mediaText}>Vídeo</Text> // Placeholder para o vídeo
+              ) : (
+                <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+              )}
+            </View>
+          )}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={3} // Três colunas para os posts
+          columnWrapperStyle={styles.columnWrapper}
+        />
+        {posts.length === 0 && (
+          <Text style={styles.messageText}>
+            @{userData ? userData.username : '...'} ainda não fez uma publicação
+          </Text>
+        )}
       </View>
       <TabMenu navigation={navigation} />
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -281,12 +315,22 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   posts: {
-    height: '40%',
+    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+  },
+  postContainer: {
+    flex: 1,
+    margin: 5,
+    aspectRatio: 1, // Mantém os posts quadrados
+  },
+  postImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
   },
   messageText: {
     color: 'white',
+    top: -300,
   },
   loadingContainer: {
     flex: 1,
@@ -294,6 +338,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#121212',
   },
+  columnWrapper: {
+    justifyContent: 'space-between',
+  },
+  mediaText: {},
 });
 
 export default Profile;

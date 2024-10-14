@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
+import CommentSection from 'components/CommentSection'; // Importe o componente CommentSection
 import Header from 'components/Header';
 import PostFeed from 'components/PostFeed';
 import TabMenu from 'components/TabMenu';
@@ -14,6 +15,9 @@ import {
   RefreshControl,
   ActivityIndicator,
   TextInput,
+  Modal,
+  TouchableWithoutFeedback,
+  PanResponder,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
@@ -48,7 +52,24 @@ const Home = ({ navigation }: Props) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
   const inputRef = useRef<TextInput | null>(null);
+  const uniquePosts = [...new Map(posts.map((post) => [post.id, post])).values()];
 
+  // Estado do modal
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return gestureState.dy > 20; // Detecta movimento para baixo
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dy > 50) {
+          setModalVisible(false); // Fecha o modal se o gesto for para baixo
+        }
+      },
+    })
+  ).current;
   const fetchPosts = async () => {
     setRefreshing(true);
     try {
@@ -144,6 +165,11 @@ const Home = ({ navigation }: Props) => {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
+  const handleCommentButtonClick = (postId: number) => {
+    setSelectedPostId(postId); // Define o ID do post selecionado
+    setModalVisible(true); // Abre o modal
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -156,10 +182,16 @@ const Home = ({ navigation }: Props) => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={posts}
+        data={uniquePosts}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        renderItem={({ item }) => <PostFeed post={item} navigation={navigation} />}
+        renderItem={({ item }) => (
+          <PostFeed
+            post={item}
+            navigation={navigation}
+            onCommentButtonClick={handleCommentButtonClick}
+          />
+        )}
         onEndReached={loadMorePosts}
         onEndReachedThreshold={0.1}
         keyboardShouldPersistTaps="handled"
@@ -223,6 +255,21 @@ const Home = ({ navigation }: Props) => {
         }
       />
       <TabMenu navigation={navigation} />
+
+      {/* Modal para Comentários */}
+      <Modal
+        animationType="slide"
+        transparent
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View {...panResponder.panHandlers} style={styles.modalContainer}>
+            {selectedPostId !== null && (
+              <CommentSection postId={selectedPostId} onClose={() => setModalVisible(false)} />
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -270,19 +317,30 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   noGamesText: {
-    color: 'white',
-    textAlign: 'center',
-    marginTop: 10,
+    color: '#fff',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingTop: 60,
+    // Adicione qualquer estilo adicional que você queira
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    justifyContent: 'space-between',
   },
   searchInput: {
     color: 'white',
     fontSize: 17,
   },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Para escurecer o fundo
   },
 });
 

@@ -1,12 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale/pt';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons'; // Importando MaterialIcons
 import api from 'services/api';
-
 interface Post {
   id: number;
   content: string;
@@ -22,35 +23,75 @@ interface UserData {
 }
 
 interface PostFeedProps {
-  post: Post; // Recebendo um único post como props
-  navigation: any; // Adicione a prop de navegação
+  post: Post;
+  navigation: any;
+  onCommentButtonClick: any;
 }
 
-const PostFeed: React.FC<PostFeedProps> = ({ post, navigation }) => {
+const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonClick }) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
   const [mediaError, setMediaError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [activeVideo, setActiveVideo] = useState<number | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [likesCount, setLikesCount] = useState<number>(0);
+  const [commentsCount, setCommentsCount] = useState<number>(0);
+  const [hasLiked, setHasLiked] = useState<boolean>(false);
   const videoRef = useRef<any>(null);
-  const [userId, setUserId] = useState<string | null>(null); // State to hold the logged-in user ID
 
   const fetchUser = async (authorId: number) => {
     const response = await api.get(`/api/users/${authorId}`);
     setUser(response.data);
   };
 
+  const fetchPostDetails = async () => {
+    const response = await api.get(`/api/post/${post.id}/details`);
+    const { _count } = response.data;
+    setLikesCount(_count.likes);
+    setCommentsCount(_count.comments);
+    setLoading(false);
+  };
+
+  const handleLike = async () => {
+    const userId = await AsyncStorage.getItem('userId');
+    if (!userId) return;
+
+    try {
+      await api.post(`/api/post/${post.id}/like`, { userId });
+      // Incrementa o contador de likes
+      setLikesCount((prev) => prev + 1);
+      setHasLiked(true);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          if (error.response.status === 409) {
+            // O usuário já curtiu, então descurte
+            setLikesCount((prev) => Math.max(prev - 1, 0)); // Decrementa o contador, mas não deixa ficar negativo
+            setHasLiked(false); // Atualiza o estado para indicar que o usuário não curtiu mais
+            console.log('Usuário descurtiu este post.');
+          } else {
+            console.error('Erro ao dar like:', error.response.data);
+          }
+        } else {
+          console.error('Erro sem resposta do servidor:', error.message);
+        }
+      } else {
+        console.error('Erro desconhecido ao dar like:', error);
+      }
+    }
+  };
   useEffect(() => {
     const getUserId = async () => {
       const id = await AsyncStorage.getItem('userId');
-      setUserId(id); // Set the logged-in user ID
+      setUserId(id);
     };
 
     getUserId();
 
     if (post) {
       fetchUser(post.authorId);
-      setLoading(false);
+      fetchPostDetails();
     }
   }, [post]);
 
@@ -74,9 +115,9 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation }) => {
   const navigateToProfile = () => {
     if (user) {
       if (user.id.toString() === userId) {
-        navigation.navigate('MyProfile'); // Navigate to MyProfile if it's the user's own profile
+        navigation.navigate('MyProfile');
       } else {
-        navigation.navigate('Profile', { profileUserId: user.id }); // Navigate to the profile of another user
+        navigation.navigate('Profile', { profileUserId: user.id });
       }
     }
   };
@@ -101,7 +142,6 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation }) => {
         </TouchableOpacity>
       </View>
       <Text style={styles.postTitle}>{post.content}</Text>
-      {/* Renderização condicional para vídeo ou imagem */}
       {isVideo(post.imageUrl) ? (
         <View>
           <TouchableOpacity onPress={handlePlayPause}>
@@ -116,7 +156,7 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation }) => {
             />
           </TouchableOpacity>
           <TouchableOpacity style={styles.muteButton} onPress={toggleMute}>
-            <Icon name={isMuted ? 'volume-x' : 'volume-2'} size={24} color="#fff" />
+            <MaterialIcons name={isMuted ? 'volume-off' : 'volume-up'} size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       ) : (
@@ -128,21 +168,27 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation }) => {
       )}
       <View style={styles.dataView}>
         <View style={styles.postData}>
-          <View style={styles.commentsContainer}>
-            <Icon name="message-circle" size={22} color="#fff" />
-            <Text style={styles.comments}>10</Text>
-          </View>
-          <View style={styles.likesContainer}>
-            <Icon name="heart" size={18} color="#fff" />
-            <Text style={styles.likes}>20</Text>
-          </View>
+          <TouchableOpacity
+            onPress={() => onCommentButtonClick(post.id)}
+            style={styles.commentsContainer}>
+            <Icon name="message-circle" size={20} color="#fff" />
+            <Text style={styles.comments}>{commentsCount}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLike} style={styles.likesContainer}>
+            <MaterialIcons
+              name={hasLiked ? 'favorite' : 'favorite-border'}
+              size={18}
+              color={hasLiked ? '#FF4141' : '#fff'}
+            />
+            <Text style={styles.likes}>{likesCount}</Text>
+          </TouchableOpacity>
         </View>
         <Text style={styles.time}>
           {formatDistanceToNow(new Date(post.createdAt), {
             addSuffix: true,
             locale: pt,
-            includeSeconds: false, // Remove "aproximadamente"
-          }).replace('aproximadamente', '')}{' '}
+            includeSeconds: false,
+          }).replace('aproximadamente', '')}
         </Text>
       </View>
     </View>
@@ -207,6 +253,7 @@ const styles = StyleSheet.create({
   },
   time: {
     color: 'white',
+    fontSize: 12,
   },
   likesContainer: {
     flexDirection: 'row',
