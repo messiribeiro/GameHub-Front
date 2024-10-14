@@ -104,10 +104,14 @@ const PostFeed: React.FC<PostFeedProps> = ({ post }) => {
       )}
       <View style={styles.dataView}>
         <View style={styles.postData}>
-          <Icon name="message-circle" size={24} color="#fff" />
-          <Text style={styles.comments}>10</Text>
-          <Icon name="heart" size={18} color="#fff" />
-          <Text style={styles.likes}>20</Text>
+          <View style={styles.commentsContainer}>
+            <Icon name="message-circle" size={22} color="#fff" />
+            <Text style={styles.comments}>10</Text>
+          </View>
+          <View style={styles.likesContainer}>
+            <Icon name="heart" size={18} color="#fff" />
+            <Text style={styles.likes}>20</Text>
+          </View>
         </View>
         <Text style={styles.time}>
           {formatDistanceToNow(new Date(post.createdAt), {
@@ -132,24 +136,23 @@ const styles = StyleSheet.create({
     paddingLeft: '2%',
   },
   userImage: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     borderRadius: 50,
   },
   username: {
     color: 'white',
-    width: 100,
     textAlign: 'center',
-    marginTop: 5,
+    marginLeft: 5,
   },
   postTitle: {
     color: 'white',
-    marginTop: 10,
+    marginTop: 5,
     paddingLeft: '2%',
   },
   postContent: {
     width: '100%',
-    height: 250,
+    height: 400,
     backgroundColor: '#000',
     marginTop: 10,
   },
@@ -170,18 +173,29 @@ const styles = StyleSheet.create({
   },
   postData: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
   },
   comments: {
     color: 'white',
-    marginLeft: 10,
   },
+
   likes: {
     color: 'white',
-    marginLeft: 10,
   },
   time: {
     color: 'white',
+  },
+
+  likesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  commentsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
   },
 });
 

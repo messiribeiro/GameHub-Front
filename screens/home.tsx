@@ -3,7 +3,7 @@ import { StackScreenProps } from '@react-navigation/stack';
 import Header from 'components/Header';
 import PostFeed from 'components/PostFeed';
 import TabMenu from 'components/TabMenu';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
@@ -41,17 +42,20 @@ const Home = ({ navigation }: Props) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [posts, setPosts] = useState<Post[]>([]); // Defina o tipo para posts
-  const [postLimit, setPostLimit] = useState(5); // Limite inicial
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [postLimit, setPostLimit] = useState(5);
   const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  const inputRef = useRef<TextInput | null>(null);
 
   const fetchPosts = async () => {
     setRefreshing(true);
     try {
       const response = await api.get('/api/post');
-      const sortedPosts = response.data.reverse().slice(0, postLimit); // Inverte a ordem antes de aplicar o limite
+      const sortedPosts = response.data.reverse().slice(0, postLimit);
       setPosts(sortedPosts);
-      setHasMorePosts(response.data.length > postLimit); // Verifica se há mais posts
+      setHasMorePosts(response.data.length > postLimit);
     } catch (error) {
       console.error('Erro ao carregar posts:', error);
     } finally {
@@ -120,7 +124,7 @@ const Home = ({ navigation }: Props) => {
   const loadMorePosts = async () => {
     if (hasMorePosts) {
       const response = await api.get('/api/post');
-      const newPosts = response.data.reverse().slice(posts.length, posts.length + postLimit); // Inverte a ordem
+      const newPosts = response.data.reverse().slice(posts.length, posts.length + postLimit);
       setPosts((prevPosts) => [...prevPosts, ...newPosts]);
       setHasMorePosts(newPosts.length > 0);
     }
@@ -130,6 +134,15 @@ const Home = ({ navigation }: Props) => {
     ...userGames,
     ...allGames.filter((game) => !userGames.some((userGame) => userGame.id === game.id)),
   ];
+
+  const filteredGames = combinedGames.filter((game) =>
+    game.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSearchIconPress = () => {
+    setIsSearchActive(true);
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
 
   if (loading) {
     return (
@@ -141,49 +154,72 @@ const Home = ({ navigation }: Props) => {
   }
 
   return (
-    <>
+    <View style={styles.container}>
+      <Header navigation={navigation} />
+      <View style={styles.searchContainer}>
+        {isSearchActive ? (
+          <TextInput
+            ref={inputRef}
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              if (text === '') {
+                setIsSearchActive(false); // Desativa a busca se o texto estiver vazio
+              }
+            }}
+            placeholder="Digite o nome do jogo"
+            placeholderTextColor="#aaa"
+            onBlur={() => {
+              if (searchQuery === '') {
+                setIsSearchActive(false); // Desativa a busca se o input perder o foco e estiver vazio
+              }
+            }}
+            onFocus={() => setIsSearchActive(true)}
+            onSubmitEditing={() => {
+              console.log('Busca:', searchQuery);
+            }}
+          />
+        ) : (
+          <TouchableOpacity style={styles.searchBar} onPress={handleSearchIconPress}>
+            <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
+            <Icon name="search" size={20} color="#fff" />
+          </TouchableOpacity>
+        )}
+      </View>
+      <View style={styles.games}>
+        {filteredGames.length > 0 ? (
+          <FlatList
+            horizontal
+            data={filteredGames}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => handleImagePress(item.id)}
+                style={styles.imageContainer}>
+                <Image
+                  source={{ uri: item.gameimageUrl }}
+                  style={styles.image}
+                  onError={() => console.error('Erro ao carregar imagem do jogo')}
+                />
+              </TouchableOpacity>
+            )}
+          />
+        ) : (
+          <Text style={styles.noGamesText}>Nenhum jogo disponível no momento</Text>
+        )}
+      </View>
       <FlatList
-        style={styles.container}
         data={posts}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        ListHeaderComponent={() => (
-          <>
-            <Header navigation={navigation} />
-            <View style={styles.searchContainer}>
-              <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
-              <Icon name="search" size={24} color="#fff" />
-            </View>
-            <View style={styles.games}>
-              {combinedGames.length > 0 ? (
-                <FlatList
-                  horizontal
-                  data={combinedGames}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() => handleImagePress(item.id)}
-                      style={styles.imageContainer}>
-                      <Image
-                        source={{ uri: item.gameimageUrl }}
-                        style={styles.image}
-                        onError={() => console.error('Erro ao carregar imagem do jogo')}
-                      />
-                    </TouchableOpacity>
-                  )}
-                />
-              ) : (
-                <Text style={styles.noGamesText}>Nenhum jogo disponível no momento</Text>
-              )}
-            </View>
-          </>
-        )}
         renderItem={({ item }) => <PostFeed post={item} />}
         onEndReached={loadMorePosts}
         onEndReachedThreshold={0.1}
+        keyboardShouldPersistTaps="handled" // Mantém o teclado aberto ao interagir
       />
       <TabMenu navigation={navigation} />
-    </>
+    </View>
   );
 };
 
@@ -208,16 +244,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 30,
-    paddingLeft: '2%',
-    paddingRight: '2%',
+    paddingLeft: '3%',
+    paddingRight: '3%',
   },
   searchTitle: {
     color: 'white',
     fontSize: 17,
   },
   games: {
-    paddingLeft: '2%',
-    paddingRight: '2%',
+    paddingLeft: '3%',
+    paddingRight: '3%',
     marginBottom: 30,
     marginTop: 10,
   },
@@ -233,6 +269,16 @@ const styles = StyleSheet.create({
     color: 'white',
     textAlign: 'center',
     marginTop: 10,
+  },
+  searchInput: {
+    color: 'white',
+    fontSize: 17,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
   },
 });
 
