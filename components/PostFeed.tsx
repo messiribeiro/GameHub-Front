@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale/pt';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
@@ -22,15 +23,17 @@ interface UserData {
 
 interface PostFeedProps {
   post: Post; // Recebendo um único post como props
+  navigation: any; // Adicione a prop de navegação
 }
 
-const PostFeed: React.FC<PostFeedProps> = ({ post }) => {
+const PostFeed: React.FC<PostFeedProps> = ({ post, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserData | null>(null);
   const [mediaError, setMediaError] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [activeVideo, setActiveVideo] = useState<number | null>(null);
   const videoRef = useRef<any>(null);
+  const [userId, setUserId] = useState<string | null>(null); // State to hold the logged-in user ID
 
   const fetchUser = async (authorId: number) => {
     const response = await api.get(`/api/users/${authorId}`);
@@ -38,6 +41,13 @@ const PostFeed: React.FC<PostFeedProps> = ({ post }) => {
   };
 
   useEffect(() => {
+    const getUserId = async () => {
+      const id = await AsyncStorage.getItem('userId');
+      setUserId(id); // Set the logged-in user ID
+    };
+
+    getUserId();
+
     if (post) {
       fetchUser(post.authorId);
       setLoading(false);
@@ -61,6 +71,16 @@ const PostFeed: React.FC<PostFeedProps> = ({ post }) => {
     return url.endsWith('.mp4') || url.endsWith('.mov');
   };
 
+  const navigateToProfile = () => {
+    if (user) {
+      if (user.id.toString() === userId) {
+        navigation.navigate('MyProfile'); // Navigate to MyProfile if it's the user's own profile
+      } else {
+        navigation.navigate('Profile', { profileUserId: user.id }); // Navigate to the profile of another user
+      }
+    }
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color="#fff" />;
   }
@@ -68,13 +88,17 @@ const PostFeed: React.FC<PostFeedProps> = ({ post }) => {
   return (
     <View style={styles.post}>
       <View style={styles.user}>
-        <Image
-          style={styles.userImage}
-          source={{
-            uri: user?.profilePictureUrl || 'https://via.placeholder.com/40',
-          }}
-        />
-        <Text style={styles.username}>@{user?.username || 'Desconhecido'}</Text>
+        <TouchableOpacity onPress={navigateToProfile}>
+          <Image
+            style={styles.userImage}
+            source={{
+              uri: user?.profilePictureUrl || 'https://via.placeholder.com/40',
+            }}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={navigateToProfile}>
+          <Text style={styles.username}>@{user?.username || 'Desconhecido'}</Text>
+        </TouchableOpacity>
       </View>
       <Text style={styles.postTitle}>{post.content}</Text>
       {/* Renderização condicional para vídeo ou imagem */}
@@ -119,7 +143,6 @@ const PostFeed: React.FC<PostFeedProps> = ({ post }) => {
             locale: pt,
             includeSeconds: false, // Remove "aproximadamente"
           }).replace('aproximadamente', '')}{' '}
-          {/* Remove a palavra "aproximadamente" */}
         </Text>
       </View>
     </View>
@@ -179,14 +202,12 @@ const styles = StyleSheet.create({
   comments: {
     color: 'white',
   },
-
   likes: {
     color: 'white',
   },
   time: {
     color: 'white',
   },
-
   likesContainer: {
     flexDirection: 'row',
     alignItems: 'center',

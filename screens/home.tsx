@@ -159,7 +159,7 @@ const Home = ({ navigation }: Props) => {
         data={posts}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        renderItem={({ item }) => <PostFeed post={item} />}
+        renderItem={({ item }) => <PostFeed post={item} navigation={navigation} />}
         onEndReached={loadMorePosts}
         onEndReachedThreshold={0.1}
         keyboardShouldPersistTaps="handled"
