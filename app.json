@@ -3,11 +3,9 @@
     "name": "GameHub",
     "slug": "GameHub",
     "version": "51.0.0",
-    "sdkVersion": "51.0.0", 
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    
     "experiments": {
       "tsconfigPaths": true
     },
