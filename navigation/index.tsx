@@ -44,6 +44,7 @@ export type RootStackParamList = {
   EditPostInfo: {photoUri: string, cameraType: string};
   Galery: undefined;
   FullScreen: {postId: string};
+  EditProfile: undefined;
 
 };
 

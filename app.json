@@ -2,7 +2,8 @@
   "expo": {
     "name": "GameHub",
     "slug": "GameHub",
-    "version": "1.0.0",
+    "version": "51.0.0",
+    "sdkVersion": "51.0.0", 
     "web": {
       "favicon": "./assets/favicon.png"
     },
@@ -34,7 +35,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1B1B1E"
     },
     "assetBundlePatterns": [
       "**/*"

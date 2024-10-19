@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale/pt';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import api from 'services/api';
