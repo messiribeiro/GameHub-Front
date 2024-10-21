@@ -27,6 +27,7 @@
     "expo-av": "~14.0.7",
     "expo-camera": "~15.0.16",
     "expo-image-picker": "~15.0.7",
+    "expo-linear-gradient": "^13.0.2",
     "expo-media-library": "~16.0.5",
     "expo-status-bar": "~1.12.1",
     "firebase": "^10.5.2",
