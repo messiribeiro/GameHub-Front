@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
+import api from 'services/api';
 
 // Defining the type of props
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
@@ -33,7 +34,7 @@ const LoginScreen = ({ navigation }: Props) => {
    }
 
    try {
-     const response = await axios.post('https://gamehub-back-6h0k.onrender.com/api/auth/login', {
+     const response = await api.post('https://gamehub-back-6h0k.onrender.com/api/auth/login', {
        email: username,
        password,
      });

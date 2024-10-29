@@ -21,8 +21,8 @@ const GameSelect = ({ navigation }: Props) => {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const response = await api.get('/api/games'); // Ajuste a rota conforme necessário
-        setGames(response.data); // Supondo que a resposta tenha a lista de jogos
+        const response = await api.get('/api/games'); 
+        setGames(response.data); 
       } catch (error) {
         console.error('Erro ao buscar jogos:', error);
         Alert.alert('Erro', 'Não foi possível carregar os jogos.');
