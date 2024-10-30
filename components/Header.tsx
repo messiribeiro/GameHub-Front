@@ -5,13 +5,14 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import api from 'services/api';
 type Props = {
   navigation: StackNavigationProp<any>;
+  onProfileImagePress: () => void;
 };
 
 interface UserData {
   profilePictureUrl: string;
 }
 
-const Header: React.FC<Props> = ({ navigation }) => {
+const Header: React.FC<Props> = ({ navigation, onProfileImagePress }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ const Header: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.navigate('MyProfile')}>
+      <TouchableOpacity onPress={onProfileImagePress}> 
         <Image
           style={styles.userImage}
           source={{

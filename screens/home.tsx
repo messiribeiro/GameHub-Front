@@ -4,6 +4,8 @@ import CommentSection from 'components/CommentSection';
 import Header from 'components/Header';
 import PostFeed from 'components/PostFeed';
 import TabMenu from 'components/TabMenu';
+import MenuModal from 'components/MenuModal';
+import { NavigationContext } from '@react-navigation/native';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -17,6 +19,8 @@ import {
   TextInput,
   Modal,
   PanResponder,
+  TouchableWithoutFeedback,
+  BackHandler 
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
@@ -55,7 +59,25 @@ const Home = ({ navigation }: Props) => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [menuVisible, setMenuVisible] = useState(false);
 
+
+  useEffect(() => {
+    const backAction = () => {
+      if (menuVisible) {
+        closeMenu();
+        return true; // Impede o fechamento do aplicativo
+      }
+      return false; // Permite o fechamento do aplicativo
+    };
+  
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+  
+    return () => backHandler.remove(); // Limpeza do listener
+  }, [menuVisible]);
+
+
+  
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -180,8 +202,21 @@ const Home = ({ navigation }: Props) => {
     );
   }
 
+
+  const openMenu = () => {
+    setMenuVisible(true);
+  };
+
+  const closeMenu = () => {
+    setMenuVisible(false);
+  };
+
+
   return (
     <View style={styles.container}>
+      
+      <MenuModal navigation={navigation} visible={menuVisible} onClose={() => setMenuVisible(false)} />
+        
       <FlatList
         data={uniquePosts}
         keyExtractor={(item) => item.id.toString()}
@@ -198,7 +233,7 @@ const Home = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <>
-            <Header navigation={navigation} />
+            <Header navigation={navigation} onProfileImagePress={openMenu}/>
             <View style={styles.searchContainer}>
               {isSearchActive ? (
                 <TextInput
