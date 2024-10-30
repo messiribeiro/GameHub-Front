@@ -9,17 +9,19 @@ import EditPostInfo from 'screens/editPostInfo';
 import EditProfile from 'screens/editProfile';
 import FindGamer from 'screens/findGamer';
 import FullScreen from 'screens/fullScreen';
-import Galery from 'screens/galery';
+import Galery from 'screens/gallery';
+import GameImageSelect from 'screens/gameImageSelect';
+import GameRegister from 'screens/gameRegister';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
 import Profile from 'screens/profile';
+import Subscribe from 'screens/subscribe';
 
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
 import SignupStep3 from '../screens/signupStep3';
-import Subscribe from 'screens/subscribe';
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -47,7 +49,8 @@ export type RootStackParamList = {
   FullScreen: {postId: string};
   EditProfile: undefined;
   Subscribe: undefined;
-
+  GameRegister: {imageUri: string};
+  GameImageSelect: undefined
 };
 
 const Tab = createBottomTabNavigator();
@@ -59,7 +62,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator initialRouteName="GameRegister">
         <Stack.Screen
           name="Login"
           component={Login}
@@ -147,6 +150,18 @@ export default function RootStack() {
         <Stack.Screen
           name="Subscribe"
           component={Subscribe}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="GameImageSelect"
+          component={GameImageSelect}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="GameRegister"
+          component={GameRegister}
           options={{ headerShown: false }}
         />
 
