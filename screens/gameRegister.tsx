@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -33,19 +34,22 @@ const GameRegister = ({ navigation, route }: Props) => {
   }
 
   useEffect(() => {
-    try {
-      async () => {
-        const gameName = await AsyncStorage.getItem('gameName');
-        const gameDescription = await AsyncStorage.getItem('gameDescription');
-        const gameCategory = await AsyncStorage.getItem('gameCategory');
-      };
+    const fetchData = async () => {
+      try {
+        const storedGameName = await AsyncStorage.getItem('gameName');
+        const storedGameDescription = await AsyncStorage.getItem('gameDescription');
+        const storedGameCategory = await AsyncStorage.getItem('gameCategory');
 
-      setGameName(gameName);
-      setGameCategory(gameCategory);
-      setGameDescription(gameDescription);
-    } catch (err) {
-      console.log(err);
-    }
+        // Certifique-se de definir os estados apenas com strings
+        if (storedGameName !== null) setGameName(storedGameName);
+        if (storedGameDescription !== null) setGameDescription(storedGameDescription);
+        if (storedGameCategory !== null) setGameCategory(storedGameCategory);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchData(); // Chame a função para buscar os dados
   }, []);
 
   useEffect(() => {
@@ -53,6 +57,23 @@ const GameRegister = ({ navigation, route }: Props) => {
       setGameImage(route.params.imageUri);
     }
   }, [route.params]);
+
+  async function handleProgress() {
+    if (!gameName || !gameDescription || !gameCategory || !gameImage) {
+      Alert.alert(
+        'Dados Incompletos',
+        'Por favor, preencha todos os campos obrigatórios.', // Mensagem do alerta
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    await AsyncStorage.setItem('gameName', gameName);
+    await AsyncStorage.setItem('gameDescription', gameDescription);
+    await AsyncStorage.setItem('gameCategory', gameCategory);
+    await AsyncStorage.setItem('gameImage', gameImage);
+    navigation.navigate('GamePreview');
+  }
 
   return (
     <View style={styles.container}>
@@ -75,8 +96,8 @@ const GameRegister = ({ navigation, route }: Props) => {
               placeholderTextColor="#A5A5A5"
               placeholder="Descrição"
               multiline
-              value={gameDescription} // Associando o valor do input ao estado
-              onChangeText={setGameDescription} // Atualizando o estado ao digitar
+              value={gameDescription}
+              onChangeText={setGameDescription}
             />
           </ScrollView>
         </View>
@@ -131,7 +152,6 @@ const GameRegister = ({ navigation, route }: Props) => {
                 style={styles.gameImage}
                 onError={() => console.error('Erro ao carregar imagem do jogo')}
               />
-
               <Text style={styles.textImage}>Clique para trocar a imagem</Text>
             </>
           ) : (
@@ -142,7 +162,7 @@ const GameRegister = ({ navigation, route }: Props) => {
           )}
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleGallery} style={styles.enterButton}>
+        <TouchableOpacity onPress={handleProgress} style={styles.enterButton}>
           <Text style={styles.buttonText}>Avançar</Text>
         </TouchableOpacity>
       </View>

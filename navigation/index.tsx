@@ -11,6 +11,7 @@ import FindGamer from 'screens/findGamer';
 import FullScreen from 'screens/fullScreen';
 import Galery from 'screens/gallery';
 import GameImageSelect from 'screens/gameImageSelect';
+import GamePreview from 'screens/gamePreview';
 import GameRegister from 'screens/gameRegister';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
@@ -51,6 +52,7 @@ export type RootStackParamList = {
   Subscribe: undefined;
   GameRegister: {imageUri: string};
   GameImageSelect: undefined
+  GamePreview: undefined
 };
 
 const Tab = createBottomTabNavigator();
@@ -162,6 +164,12 @@ export default function RootStack() {
         <Stack.Screen
           name="GameRegister"
           component={GameRegister}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="GamePreview"
+          component={GamePreview}
           options={{ headerShown: false }}
         />
 
