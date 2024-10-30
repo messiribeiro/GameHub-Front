@@ -18,6 +18,7 @@ import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
 import Profile from 'screens/profile';
 import Subscribe from 'screens/subscribe';
+import Payment from 'screens/payment';
 
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
@@ -53,6 +54,7 @@ export type RootStackParamList = {
   GameRegister: {imageUri: string};
   GameImageSelect: undefined
   GamePreview: undefined
+  Payment: {type: string};
 };
 
 const Tab = createBottomTabNavigator();
@@ -64,7 +66,7 @@ const Stack = createStackNavigator<RootStackParamList>();
 export default function RootStack() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="GameRegister">
+      <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
           name="Login"
           component={Login}
@@ -172,6 +174,12 @@ export default function RootStack() {
           component={GamePreview}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="Payment"
+          component={Payment}
+          options={{ headerShown: false }}
+        />
+
 
         
 

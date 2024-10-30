@@ -1,15 +1,62 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, Touchable } from 'react-native';
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import { useStripe } from '@stripe/stripe-react-native';
+import * as WebBrowser from 'expo-web-browser';
 
 import { RootStackParamList } from '../navigation';
+import api from 'services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'Subscribe'>;
 
 const Subscribe = ({ navigation }: Props) => {
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const storedUserId = await AsyncStorage.getItem("userId");
+      setUserId(storedUserId);
+    };
+    
+    fetchUserId();
+  }, []);
+
+  const initializePayment = async (type: string) => {
+    try {
+      const successUrl = 'https://myapp.com/success';
+      const cancelUrl = 'https://myapp.com/cancel';
+
+      const response = await api.post('/api/subscriptions/checkout-session', {
+        userId: userId,
+        type: type,
+        successUrl: successUrl,
+        cancelUrl: cancelUrl,
+      });
+
+      const { url } = response.data;
+
+      const result = await WebBrowser.openBrowserAsync(url);
+
+      if (result.type === 'cancel' || result.type === 'dismiss') {
+        console.log('Pagamento foi cancelado ou a página foi fechada');
+      } else {
+        console.log('Possível sucesso, ou verifique o backend para confirmação');
+      }
+    } catch (error) {
+      console.error('Erro ao inicializar o pagamento:', error);
+    }
+  };
+
+  const handleNavigationGameDevBasic = () => {
+    initializePayment("GameDev Basic");
+  };
+
+  const handleNavigationGameDev = () => {
+    initializePayment("GameDev");
+  };
+
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -34,7 +81,7 @@ const Subscribe = ({ navigation }: Props) => {
             </View>
 
             <Text style={styles.price}>R$ 19,90/mês</Text>
-            <TouchableOpacity style={styles.buttonSubscribe}>
+            <TouchableOpacity onPress={handleNavigationGameDev} style={styles.buttonSubscribe}>
               <Text style={styles.buttonText}>Assinar</Text>
             </TouchableOpacity>
 
@@ -58,7 +105,7 @@ const Subscribe = ({ navigation }: Props) => {
             </View>
 
             <Text style={styles.price}>R$ 5,90/mês</Text>
-            <TouchableOpacity style={styles.buttonSubscribe}>
+            <TouchableOpacity onPress={handleNavigationGameDevBasic} style={styles.buttonSubscribe}>
               <Text style={styles.buttonText}>Assinar</Text>
             </TouchableOpacity>
 
@@ -158,7 +205,6 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   buttonSubscribe: {
-    width: '100%',
     height: 40,
     borderRadius: 30,
     backgroundColor: '#701EFF',
