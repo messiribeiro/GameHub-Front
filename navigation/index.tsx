@@ -19,6 +19,7 @@ import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
 import SignupStep3 from '../screens/signupStep3';
+import Subscribe from 'screens/subscribe';
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -45,6 +46,7 @@ export type RootStackParamList = {
   Galery: undefined;
   FullScreen: {postId: string};
   EditProfile: undefined;
+  Subscribe: undefined;
 
 };
 
@@ -139,6 +141,12 @@ export default function RootStack() {
         <Stack.Screen
           name="FullScreen"
           component={FullScreen}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="Subscribe"
+          component={Subscribe}
           options={{ headerShown: false }}
         />
 

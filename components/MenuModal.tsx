@@ -91,10 +91,10 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
 
       <View style={styles.premiumContainer}>
         <Text style={styles.title}>Seja um usuário premium</Text>
-        <View style={styles.gameDev}>
+        <TouchableOpacity onPress={() => {navigation.navigate("Subscribe")}} style={styles.gameDev}>
           <Icon name="code" size={20} color="#fff" />
           <Text style={styles.text}>GameDev</Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.pagesAndLogoutContainer}>
