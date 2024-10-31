@@ -3,7 +3,6 @@ import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import { useStripe } from '@stripe/stripe-react-native';
 import * as WebBrowser from 'expo-web-browser';
 
 import { RootStackParamList } from '../navigation';
@@ -25,29 +24,31 @@ const Subscribe = ({ navigation }: Props) => {
 
   const initializePayment = async (type: string) => {
     try {
-      const successUrl = 'https://myapp.com/success';
-      const cancelUrl = 'https://myapp.com/cancel';
+        const successUrl = 'https://youtube.com';
+        const cancelUrl = 'https://youtube.com';
 
-      const response = await api.post('/api/subscriptions/checkout-session', {
-        userId: userId,
-        type: type,
-        successUrl: successUrl,
-        cancelUrl: cancelUrl,
-      });
+        const response = await api.post('/api/subscriptions/checkout-session', {
+            userId: userId,
+            type: type,
+            successUrl: successUrl,
+            cancelUrl: cancelUrl,
+        });
 
-      const { url } = response.data;
+        const { url } = response.data;
 
-      const result = await WebBrowser.openBrowserAsync(url);
+        const result = await WebBrowser.openBrowserAsync(url);
 
-      if (result.type === 'cancel' || result.type === 'dismiss') {
-        console.log('Pagamento foi cancelado ou a página foi fechada');
-      } else {
-        console.log('Possível sucesso, ou verifique o backend para confirmação');
-      }
+        if (result.type === 'cancel' || result.type === 'dismiss') {
+            console.log('Pagamento foi cancelado ou a página foi fechada');
+        } else {
+            console.log('Possível sucesso, ou verifique o backend para confirmação');
+            // Redirecionar para a página inicial após o pagamento
+            navigation.navigate('Home'); 
+        }
     } catch (error) {
-      console.error('Erro ao inicializar o pagamento:', error);
+        console.error('Erro ao inicializar o pagamento:', error);
     }
-  };
+};
 
   const handleNavigationGameDevBasic = () => {
     initializePayment("GameDev Basic");
