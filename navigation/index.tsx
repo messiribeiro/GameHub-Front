@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,17 +8,21 @@ import EditPostInfo from 'screens/editPostInfo';
 import EditProfile from 'screens/editProfile';
 import FindGamer from 'screens/findGamer';
 import FullScreen from 'screens/fullScreen';
-import Galery from 'screens/galery';
+import Galery from 'screens/gallery';
+import GameImageSelect from 'screens/gameImageSelect';
+import GamePreview from 'screens/gamePreview';
+import GameRegister from 'screens/gameRegister';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
 import Profile from 'screens/profile';
+import Subscribe from 'screens/subscribe';
+import Payment from 'screens/payment';
 
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
 import SignupStep2 from '../screens/signupStep2';
 import SignupStep3 from '../screens/signupStep3';
-import Subscribe from 'screens/subscribe';
 
 // Definindo o tipo de parâmetros das rotas
 export type RootStackParamList = {
@@ -34,7 +37,7 @@ export type RootStackParamList = {
   Settings: undefined;
   MyProfile: undefined;
   Home: undefined;
-  FindGamer: {gameId: number};
+  FindGamer: { gameId: number };
   Chat: undefined;
   ChatWindow: {
     receiverId: number;
@@ -42,23 +45,37 @@ export type RootStackParamList = {
   };
   Camera: undefined;
   PhotoPreview: { photoUri: string };
-  EditPostInfo: {photoUri: string, cameraType: string};
+  EditPostInfo: { photoUri: string; cameraType: string };
   Galery: undefined;
-  FullScreen: {postId: string};
+  FullScreen: { postId: string };
   EditProfile: undefined;
   Subscribe: undefined;
-
+  GameRegister: { imageUri: string };
+  GameImageSelect: undefined;
+  GamePreview: undefined;
+  Payment: { type: string };
 };
-
-const Tab = createBottomTabNavigator();
-
 
 // Criando o Stack Navigator
 const Stack = createStackNavigator<RootStackParamList>();
 
-export default function RootStack() {
+// Adicione o tipo para o linking
+type RootStackProps = {
+  linking: {
+    prefixes: string[];
+    config: {
+      screens: {
+        Home: string;
+        Success: string;
+        Cancel: string;
+      };
+    };
+  };
+};
+
+export default function RootStack({ linking }: RootStackProps) {
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen
           name="Login"
@@ -103,8 +120,7 @@ export default function RootStack() {
         <Stack.Screen
           name="Home"
           component={Home}
-
-          options={{ headerShown: false, gestureEnabled: false,}}
+          options={{ headerShown: false, gestureEnabled: false }}
         />
         <Stack.Screen
           name="FindGamer"
@@ -121,13 +137,11 @@ export default function RootStack() {
           component={Chat}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="Camera"
           component={CameraScreen}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="EditPostInfo"
           component={EditPostInfo}
@@ -143,16 +157,31 @@ export default function RootStack() {
           component={FullScreen}
           options={{ headerShown: false }}
         />
-
         <Stack.Screen
           name="Subscribe"
           component={Subscribe}
           options={{ headerShown: false }}
         />
-
-        
-
-
+        <Stack.Screen
+          name="GameImageSelect"
+          component={GameImageSelect}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="GameRegister"
+          component={GameRegister}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="GamePreview"
+          component={GamePreview}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Payment"
+          component={Payment}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
