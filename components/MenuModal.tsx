@@ -10,7 +10,7 @@ import {
   Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api'; // Certifique-se de ter esta importação
+import api from 'services/api';
 
 interface MenuProps {
   visible: boolean;
@@ -28,9 +28,11 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
     followersCount: number;
     followingCount: number;
   } | null>(null);
-  const [userData, setUserData] = useState<{ profilePictureUrl: string; username: string } | null>(
-    null
-  );
+  const [userData, setUserData] = useState<{
+    profilePictureUrl: string;
+    username: string;
+    Subscription?: { isActive: boolean };
+  } | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -39,8 +41,8 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
         duration: 100,
         useNativeDriver: true,
       }).start();
-      fetchUserStats(); // Fetch user stats when modal is opened
-      fetchUserData(); // Fetch user data when modal is opened
+      fetchUserStats();
+      fetchUserData();
     } else {
       Animated.timing(slideAnim, {
         toValue: -screenWidth,
@@ -80,19 +82,20 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
     }
   };
 
+  const isPremium = userData?.Subscription?.isActive;
+
   return (
     <Animated.View style={[styles.menu, { transform: [{ translateX: slideAnim }] }]}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate('MyProfile');
-          }}>
-          <Image
-            source={{ uri: userData?.profilePictureUrl }}
-            style={styles.userImage}
-            onError={() => console.error('Erro ao carregar imagem do perfil')}
-          />
-        </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          navigation.navigate('MyProfile');
+        }}
+        style={styles.header}>
+        <Image
+          source={{ uri: userData?.profilePictureUrl }}
+          style={styles.userImage}
+          onError={() => console.error('Erro ao carregar imagem do perfil')}
+        />
 
         <View style={styles.userData}>
           <Text style={styles.username}>{userData?.username || '@Usuário'}</Text>
@@ -101,7 +104,7 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
             <Text style={styles.statusText}>online</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
 
       <View style={styles.follows}>
         <Text style={styles.followers}>{userStats?.followingCount || 0} seguindo</Text>
@@ -109,14 +112,16 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
       </View>
 
       <View style={styles.premiumContainer}>
-        <Text style={styles.title}>Seja um usuário premium</Text>
+        <Text style={styles.title}>
+          {isPremium ? 'Plano atual: GameDev' : 'Seja um usuário premium'}
+        </Text>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('Subscribe');
+            navigation.navigate(isPremium ? 'Dashboard' : 'Subscribe');
           }}
           style={styles.gameDev}>
           <Icon name="code" size={20} color="#fff" />
-          <Text style={styles.text}>GameDev</Text>
+          <Text style={styles.text}>{isPremium ? 'Dashboard' : 'GameDev'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -160,7 +165,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   header: {

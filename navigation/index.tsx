@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import Dashboard from 'screens/Dashboard';
 import CameraScreen from 'screens/camera';
 import Chat from 'screens/chat';
 import ChatWindow from 'screens/chatWindow';
@@ -15,9 +16,9 @@ import GameRegister from 'screens/gameRegister';
 import GameSelect from 'screens/gameSelect';
 import Home from 'screens/home';
 import MyProfile from 'screens/myProfile';
+import Payment from 'screens/payment';
 import Profile from 'screens/profile';
 import Subscribe from 'screens/subscribe';
-import Payment from 'screens/payment';
 
 import Login from '../screens/login';
 import SignupStep1 from '../screens/signupStep1';
@@ -53,6 +54,7 @@ export type RootStackParamList = {
   GameRegister: { imageUri: string };
   GameImageSelect: undefined;
   GamePreview: undefined;
+  Dashboard: undefined;
   Payment: { type: string };
 };
 
@@ -77,91 +79,31 @@ export default function RootStack({ linking }: RootStackProps) {
   return (
     <NavigationContainer linking={linking}>
       <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen
-          name="Login"
-          component={Login}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="SignupStep1"
-          component={SignupStep1}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="SignupStep2"
-          component={SignupStep2}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="SignupStep3"
-          component={SignupStep3}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="GameSelect"
-          component={GameSelect}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={Profile}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="MyProfile"
-          component={MyProfile}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="EditProfile"
-          component={EditProfile}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+        <Stack.Screen name="SignupStep1" component={SignupStep1} options={{ headerShown: false }} />
+        <Stack.Screen name="SignupStep2" component={SignupStep2} options={{ headerShown: false }} />
+        <Stack.Screen name="SignupStep3" component={SignupStep3} options={{ headerShown: false }} />
+        <Stack.Screen name="GameSelect" component={GameSelect} options={{ headerShown: false }} />
+        <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
+        <Stack.Screen name="MyProfile" component={MyProfile} options={{ headerShown: false }} />
+        <Stack.Screen name="EditProfile" component={EditProfile} options={{ headerShown: false }} />
         <Stack.Screen
           name="Home"
           component={Home}
           options={{ headerShown: false, gestureEnabled: false }}
         />
-        <Stack.Screen
-          name="FindGamer"
-          component={FindGamer}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="ChatWindow"
-          component={ChatWindow}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Chat"
-          component={Chat}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Camera"
-          component={CameraScreen}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="FindGamer" component={FindGamer} options={{ headerShown: false }} />
+        <Stack.Screen name="ChatWindow" component={ChatWindow} options={{ headerShown: false }} />
+        <Stack.Screen name="Chat" component={Chat} options={{ headerShown: false }} />
+        <Stack.Screen name="Camera" component={CameraScreen} options={{ headerShown: false }} />
         <Stack.Screen
           name="EditPostInfo"
           component={EditPostInfo}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="Galery"
-          component={Galery}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="FullScreen"
-          component={FullScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Subscribe"
-          component={Subscribe}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="Galery" component={Galery} options={{ headerShown: false }} />
+        <Stack.Screen name="FullScreen" component={FullScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Subscribe" component={Subscribe} options={{ headerShown: false }} />
         <Stack.Screen
           name="GameImageSelect"
           component={GameImageSelect}
@@ -172,16 +114,9 @@ export default function RootStack({ linking }: RootStackProps) {
           component={GameRegister}
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="GamePreview"
-          component={GamePreview}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="Payment"
-          component={Payment}
-          options={{ headerShown: false }}
-        />
+        <Stack.Screen name="GamePreview" component={GamePreview} options={{ headerShown: false }} />
+        <Stack.Screen name="Payment" component={Payment} options={{ headerShown: false }} />
+        <Stack.Screen name="Dashboard" component={Dashboard} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
