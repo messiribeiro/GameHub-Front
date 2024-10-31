@@ -1,7 +1,19 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Modal,
+  Alert,
+  Animated,
+  Easing,
+} from 'react-native';
+import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
 
@@ -13,6 +25,11 @@ const GamePreview = ({ navigation, route }: Props) => {
   const [gameCategory, setGameCategory] = useState<string | null>(null);
   const [gameImage, setGameImage] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState<string>('');
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Animations
+  const scaleAnim = useRef(new Animated.Value(0)).current; // 0: small, 1: normal
+  const opacityAnim = useRef(new Animated.Value(0)).current; // 0: transparent, 1: opaque
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,7 +39,6 @@ const GamePreview = ({ navigation, route }: Props) => {
         const storedGameCategory = await AsyncStorage.getItem('gameCategory');
         const storedGameDescription = await AsyncStorage.getItem('gameDescription');
 
-        console.log(storedGameDescription);
         setGameName(storedGameName);
         setGameCategory(storedGameCategory);
         setGameDescription(storedGameDescription);
@@ -32,17 +48,102 @@ const GamePreview = ({ navigation, route }: Props) => {
       }
     };
 
-    fetchData(); // Chame a função para buscar os dados
+    fetchData();
 
-    // Defina a data atual
     const date = new Date();
     const options: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     };
-    setCurrentDate(date.toLocaleDateString('pt-BR', options)); // Formate a data
+    setCurrentDate(date.toLocaleDateString('pt-BR', options));
   }, []);
+
+  const handlePublish = async () => {
+    if (!gameName || !gameDescription || !gameCategory || !gameImage) {
+      Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+      return;
+    }
+
+    const userId = await AsyncStorage.getItem('userId');
+    const formData = new FormData();
+
+    // Adicione os dados do jogo ao FormData
+    formData.append('name', gameName);
+    formData.append('description', gameDescription);
+    formData.append('category', gameCategory);
+
+    // Verifica a extensão do arquivo
+    const fileExtension = gameImage.split('.').pop()?.toLowerCase();
+    let fileType = '';
+
+    if (fileExtension === 'png') {
+      fileType = 'image/png';
+    } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+      fileType = 'image/jpeg';
+    } else {
+      Alert.alert('Erro', 'Apenas arquivos PNG e JPG são aceitos.');
+      return;
+    }
+
+    const file = {
+      uri: gameImage,
+      name: `arquivoDoUser${userId}.${fileExtension}`, // Inclui a extensão no nome do arquivo
+      type: fileType,
+    };
+    console.log(file);
+    formData.append('file', file as any);
+
+    try {
+      const response = await api.post(`/api/games/add/${userId}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (response.status === 201) {
+        navigation.navigate('Home');
+      } else {
+        Alert.alert('ah não ☹️', 'Não conseguimos cadastrar seu jogo');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('ah não ☹️', 'Não conseguimos cadastrar seu jogo');
+    } finally {
+      closeModal(); // Fecha o modal após a tentativa de publicação
+    }
+  };
+
+  const openModal = () => {
+    setModalVisible(true);
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.ease,
+    }).start();
+    Animated.timing(opacityAnim, {
+      toValue: 1,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.ease,
+    }).start();
+  };
+
+  const closeModal = () => {
+    Animated.timing(scaleAnim, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.ease,
+    }).start(() => setModalVisible(false));
+    Animated.timing(opacityAnim, {
+      toValue: 0,
+      duration: 100,
+      useNativeDriver: true,
+      easing: Easing.ease,
+    }).start();
+  };
 
   return (
     <View style={styles.container}>
@@ -66,9 +167,37 @@ const GamePreview = ({ navigation, route }: Props) => {
           </ScrollView>
         </View>
       </View>
-      <TouchableOpacity style={styles.button}>
+
+      <TouchableOpacity style={styles.button} onPress={openModal}>
         <Text style={styles.textButton}>Publicar</Text>
       </TouchableOpacity>
+
+      <Modal visible={modalVisible} transparent animationType="none" onRequestClose={closeModal}>
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            style={[
+              styles.modalContainer,
+              {
+                transform: [{ scale: scaleAnim }],
+                opacity: opacityAnim,
+              },
+            ]}>
+            <Text style={styles.modalText}>Tem certeza que deseja publicar este jogo?</Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={closeModal}>
+                <Text style={styles.modalButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.publishButton]}
+                onPress={handlePublish}>
+                <Text style={styles.modalButtonText}>Publicar</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -133,9 +262,49 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
   },
-
   descriptionContainer: {
     maxHeight: 200,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    backgroundColor: '#2B2B2C',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+  },
+  modalText: {
+    color: 'white',
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#707070',
+  },
+  publishButton: {
+    backgroundColor: '#5312C2',
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 15,
   },
 });
 
