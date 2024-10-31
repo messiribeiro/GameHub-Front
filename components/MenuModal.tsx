@@ -1,6 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated, Dimensions, Image } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  Dimensions,
+  Image,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api'; // Certifique-se de ter esta importação
 
@@ -15,9 +23,14 @@ const screenHeight = Dimensions.get('window').height;
 
 const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
   const slideAnim = React.useRef(new Animated.Value(-screenWidth)).current;
-  
-  const [userStats, setUserStats] = useState<{ followersCount: number; followingCount: number } | null>(null);
-  const [userData, setUserData] = useState<{ profilePictureUrl: string; username: string } | null>(null);
+
+  const [userStats, setUserStats] = useState<{
+    followersCount: number;
+    followingCount: number;
+  } | null>(null);
+  const [userData, setUserData] = useState<{ profilePictureUrl: string; username: string } | null>(
+    null
+  );
 
   useEffect(() => {
     if (visible) {
@@ -39,7 +52,7 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
 
   const fetchUserStats = async () => {
     try {
-      const profileUserId = await AsyncStorage.getItem("userId");
+      const profileUserId = await AsyncStorage.getItem('userId');
       const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
       setUserStats(statsResponse.data);
     } catch (error) {
@@ -49,7 +62,7 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
 
   const fetchUserData = async () => {
     try {
-      const profileUserId = await AsyncStorage.getItem("userId");
+      const profileUserId = await AsyncStorage.getItem('userId');
       const userResponse = await api.get(`api/users/${profileUserId}`);
       setUserData(userResponse.data);
     } catch (error) {
@@ -70,11 +83,17 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
   return (
     <Animated.View style={[styles.menu, { transform: [{ translateX: slideAnim }] }]}>
       <View style={styles.header}>
-        <Image
-          source={{ uri: userData?.profilePictureUrl }}
-          style={styles.userImage}
-          onError={() => console.error('Erro ao carregar imagem do perfil')}
-        />
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('MyProfile');
+          }}>
+          <Image
+            source={{ uri: userData?.profilePictureUrl }}
+            style={styles.userImage}
+            onError={() => console.error('Erro ao carregar imagem do perfil')}
+          />
+        </TouchableOpacity>
+
         <View style={styles.userData}>
           <Text style={styles.username}>{userData?.username || '@Usuário'}</Text>
           <View style={styles.status}>
@@ -91,10 +110,14 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
 
       <View style={styles.premiumContainer}>
         <Text style={styles.title}>Seja um usuário premium</Text>
-        <View style={styles.gameDev}>
+        <TouchableOpacity
+          onPress={() => {
+            navigation.navigate('Subscribe');
+          }}
+          style={styles.gameDev}>
           <Icon name="code" size={20} color="#fff" />
           <Text style={styles.text}>GameDev</Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.pagesAndLogoutContainer}>
@@ -128,22 +151,22 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   followers: {
-    color: "white",
+    color: 'white',
     fontSize: 15,
   },
   following: {
-    color: "white",
+    color: 'white',
     fontSize: 15,
   },
   title: {
-    color: "white",
+    color: 'white',
     fontSize: 18,
-    fontWeight: "700"
+    fontWeight: '700',
   },
   header: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
-    alignItems: "center"
+    alignItems: 'center',
   },
   userImage: {
     width: 60,
@@ -152,57 +175,57 @@ const styles = StyleSheet.create({
   },
   userData: {},
   username: {
-    color: "white",
+    color: 'white',
     fontSize: 15,
   },
   status: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 5,
   },
   circle: {
     width: 10,
     height: 10,
-    backgroundColor: "#36C929",
+    backgroundColor: '#36C929',
     borderRadius: 50,
     top: 1,
   },
   follows: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 30,
-    width: "100%",
-    justifyContent: "space-between"
+    width: '100%',
+    justifyContent: 'space-between',
   },
   premiumContainer: {
     marginTop: 30,
     gap: 10,
   },
   text: {
-    color: "white",
-    fontSize: 15
+    color: 'white',
+    fontSize: 15,
   },
   statusText: {
-    color: "white"
+    color: 'white',
   },
   gameDev: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 5,
-    alignItems: "center",
+    alignItems: 'center',
   },
   pagesAndLogoutContainer: {
-    marginTop: "30%",
-    gap: 15
+    marginTop: '30%',
+    gap: 15,
   },
   settingsView: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 5,
-    alignItems: "center",
+    alignItems: 'center',
   },
   logoutView: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 5,
-    alignItems: "center",
+    alignItems: 'center',
   },
 });
 
