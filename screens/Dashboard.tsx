@@ -10,7 +10,7 @@ interface Game {
   name: string;
   description: string;
   category: string;
-  gameimageUrl: string;
+  gameimageUrl: string | null;
 }
 
 const Dashboard = () => {
@@ -41,11 +41,15 @@ const Dashboard = () => {
 
   const fetchUserGames = async (id: string) => {
     try {
-      const response = await api.get(`/api/users/${id}`);
-      setUserGames(response.data.GameUser.map((gameUser: any) => gameUser.game));
+      const response = await api.get(`/api/games/user/${id}`);
+      setUserGames(response.data); // Diretamente mapeia a lista de jogos
     } catch (error) {
       console.error('Erro ao buscar jogos do usuário:', error);
     }
+  };
+
+  const handleGameregister = () => {
+    navigation.navigate('GameRegister');
   };
 
   if (loading) {
@@ -56,10 +60,6 @@ const Dashboard = () => {
       </View>
     );
   }
-
-  const handleGameregister = () => {
-    navigation.navigate('GameRegister');
-  };
 
   return (
     <View style={{ flex: 1, padding: 16, backgroundColor: '#121212', paddingTop: 32 }}>
@@ -109,7 +109,7 @@ const Dashboard = () => {
                 marginBottom: 16,
               }}>
               <Image
-                source={{ uri: item.gameimageUrl }}
+                source={{ uri: item.gameimageUrl || 'https://via.placeholder.com/100' }}
                 style={{ width: 100, height: 100, borderRadius: 8, marginRight: 16 }}
               />
               <View style={{ flex: 1 }}>
@@ -134,7 +134,9 @@ const Dashboard = () => {
           <Text style={{ color: '#fff', marginBottom: 16 }}>
             Você ainda não adicionou nenhum jogo à plataforma
           </Text>
-          <TouchableOpacity style={{ padding: 10, backgroundColor: '#6a0dad', borderRadius: 8 }}>
+          <TouchableOpacity
+            onPress={handleGameregister}
+            style={{ padding: 10, backgroundColor: '#6a0dad', borderRadius: 8 }}>
             <Text style={{ color: '#fff' }}>Adicionar jogo</Text>
           </TouchableOpacity>
         </View>
