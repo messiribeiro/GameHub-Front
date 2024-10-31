@@ -1,11 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavigationContext } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
 import CommentSection from 'components/CommentSection';
 import Header from 'components/Header';
+import MenuModal from 'components/MenuModal';
 import PostFeed from 'components/PostFeed';
 import TabMenu from 'components/TabMenu';
-import MenuModal from 'components/MenuModal';
-import { NavigationContext } from '@react-navigation/native';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -20,7 +20,7 @@ import {
   Modal,
   PanResponder,
   TouchableWithoutFeedback,
-  BackHandler 
+  BackHandler,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
@@ -61,7 +61,6 @@ const Home = ({ navigation }: Props) => {
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
 
-
   useEffect(() => {
     const backAction = () => {
       if (menuVisible) {
@@ -70,14 +69,12 @@ const Home = ({ navigation }: Props) => {
       }
       return false; // Permite o fechamento do aplicativo
     };
-  
+
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-  
+
     return () => backHandler.remove(); // Limpeza do listener
   }, [menuVisible]);
 
-
-  
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
@@ -202,7 +199,6 @@ const Home = ({ navigation }: Props) => {
     );
   }
 
-
   const openMenu = () => {
     setMenuVisible(true);
   };
@@ -211,12 +207,14 @@ const Home = ({ navigation }: Props) => {
     setMenuVisible(false);
   };
 
-
   return (
     <View style={styles.container}>
-      
-      <MenuModal navigation={navigation} visible={menuVisible} onClose={() => setMenuVisible(false)} />
-        
+      <MenuModal
+        navigation={navigation}
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+      />
+
       <FlatList
         data={uniquePosts}
         keyExtractor={(item) => item.id.toString()}
@@ -233,7 +231,7 @@ const Home = ({ navigation }: Props) => {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <>
-            <Header navigation={navigation} onProfileImagePress={openMenu}/>
+            <Header navigation={navigation} onProfileImagePress={openMenu} />
             <View style={styles.searchContainer}>
               {isSearchActive ? (
                 <TextInput
@@ -312,7 +310,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    paddingTop: '10%',
     paddingBottom: 40,
   },
   loadingContainer: {

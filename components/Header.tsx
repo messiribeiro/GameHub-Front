@@ -28,7 +28,7 @@ const Header: React.FC<Props> = ({ navigation, onProfileImagePress }) => {
 
   return (
     <View style={styles.header}>
-      <TouchableOpacity onPress={onProfileImagePress}> 
+      <TouchableOpacity onPress={onProfileImagePress}>
         <Image
           style={styles.userImage}
           source={{
@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     paddingRight: '5%',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginTop: '5%',
   },
   userImage: {
     width: 40,

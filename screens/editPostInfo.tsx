@@ -3,7 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
 import axios from 'axios';
 import { Video, AVPlaybackStatus } from 'expo-av';
-import * as FileSystem from 'expo-file-system'; // Para manipular arquivos no Expo
+import * as FileSystem from 'expo-file-system';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
@@ -16,7 +16,7 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api'; // Importando o arquivo da API configurado
+import api from 'services/api';
 
 import GoBackAlert from '../components/GoBackAlert';
 import { RootStackParamList } from '../navigation';
@@ -32,7 +32,7 @@ const EditPostInfo = ({ navigation, route }: Props) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [caption, setCaption] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [postSubmitted, setPostSubmitted] = useState(false); // Adiciona esta variável de estado
+  const [postSubmitted, setPostSubmitted] = useState(false);
 
   const videoRef = useRef<Video>(null);
   const isVideo = photoUri && photoUri.endsWith('.mp4');
