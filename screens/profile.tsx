@@ -23,6 +23,10 @@ interface UserData {
   id: number;
   username: string;
   profilePictureUrl?: string;
+  Subscription: {
+    type: string;
+    isActive: boolean;
+  };
 }
 
 interface FollowStats {
@@ -167,8 +171,8 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
           <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
-            {userData?.username === 'droffyzin' && (
-              <Verified name="verified" size={16} color="#4CAF50" style={styles.verifiedIcon} />
+            {userData?.Subscription?.isActive && (
+              <Verified name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
             )}
           </View>
         </View>
@@ -255,9 +259,7 @@ const styles = StyleSheet.create({
   },
   username: {
     color: 'white',
-    width: 100,
     textAlign: 'center',
-    marginTop: 5,
   },
   buttonsContainer: {
     flexDirection: 'row',
@@ -284,7 +286,6 @@ const styles = StyleSheet.create({
   },
   profileData: {
     padding: 10,
-    marginTop: 10,
   },
   bio: {
     color: 'white',
@@ -331,11 +332,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 5,
+    marginTop: 5,
   },
-
   verifiedIcon: {
-    top: 3,
-    left: -8,
+    top: 1,
   },
 });
 

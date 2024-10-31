@@ -7,12 +7,18 @@ import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity } fr
 import Verified from 'react-native-vector-icons/MaterialIcons';
 import api from 'services/api';
 
+
 import { RootStackParamList } from '../navigation';
 
 interface UserData {
   id: number;
   username: string;
   profilePictureUrl: string;
+  bio: string | null;
+  Subscription: {
+    type: string;
+    isActive: boolean;
+  };
 }
 
 interface UserStats {
@@ -28,19 +34,19 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState<boolean>(true); // State for loading
 
-
   useEffect(() => {
     const getUserData = async () => {
       const profileUserId = await AsyncStorage.getItem("userId");
 
       console.log(profileUserId);
       const userResponse = await api.get(`api/users/${profileUserId}`);
+
       setUserData(userResponse.data);
 
       // Fetch user stats
       const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
       setUserStats(statsResponse.data);
-      setLoading(false); // Set loading to false after fetching data
+      setLoading(false); 
     };
     getUserData();
   }, []);
@@ -49,8 +55,7 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
     navigation.navigate('EditProfile');
   };
 
-
-  if (loading) { // Render loading indicator if loading is true
+  if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#FFFFFF" />
@@ -64,26 +69,24 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
         <Image source={{ uri: "https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png" }} style={styles.bannerImage} />
       </View>
       <View style={styles.userProfileActionsView}>
-      <View style={styles.userData}>
-      <Image source={{ uri: userData ? userData.profilePictureUrl : undefined }} style={styles.userImage} />
+        <View style={styles.userData}>
+          <Image source={{ uri: userData ? userData.profilePictureUrl : undefined }} style={styles.userImage} />
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
-            {userData?.username === 'droffyzin' && (
-              <Verified name="verified" size={16} color="#4CAF50" style={styles.verifiedIcon} />
+            {userData?.Subscription?.isActive && (
+              <Verified name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
             )}
           </View>
         </View>
-         <View style={styles.buttonsContainer}>
-           <View style={styles.editButton}>
-              <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
-                <Text style={styles.text}>Editar</Text>
-              </TouchableOpacity>
-           </View>
-         </View>
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
+            <Text style={styles.text}>Editar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.profileData}>
         <Text style={styles.bio}>
-          {userData?.bio ? userData.bio : "Clique em editar para adicionar um bio.  "}
+          {userData?.bio ? userData.bio : "Clique em editar para adicionar um bio."}
         </Text>
         <View style={styles.followerInformation}>
           <Text style={styles.followerText}>{userStats ? userStats.followingCount : 0} seguindo</Text>
@@ -133,9 +136,7 @@ const styles = StyleSheet.create({
   },
   username: {
     color: "white",
-    width: 100,
     textAlign: "center",
-    marginTop: 5,
   },
   buttonsContainer: {
     flexDirection: "row",
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
     height: "8%",
-    marginTop: 30,
+    marginTop: 10,
   },
   followerInformation: {
     marginTop: 15,
@@ -191,19 +192,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#121212', // Cor de fundo igual ao resto do aplicativo
+    backgroundColor: '#121212',
   },
-
   usernameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 5,
+    marginTop: 5,
+    
   },
-
   verifiedIcon: {
-    top: 3,
-    left: -8,
-  },
+    top: 1,
+  }
 });
 
 export default MyProfile;
