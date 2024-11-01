@@ -151,8 +151,6 @@ const EditPostInfo = ({ navigation, route }: Props) => {
           return;
         }
 
-        console.log('Tipo do arquivo:', fileType); // Imprimir o tipo do arquivo
-
         const file = {
           uri: photoUri,
           name: `arquivoDoUser${userId}.${fileExtension}`,

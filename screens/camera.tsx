@@ -2,20 +2,32 @@ import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
 import ImagePreview from 'components/ImagePreview';
 import VideoPreview from 'components/VideoPreview';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions, Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Album } from 'expo-media-library';
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, View, TouchableOpacity, Text, StatusBar, Button, Image } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Text,
+  StatusBar,
+  Button,
+  Image,
+  Alert,
+  BackHandler,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
 import { RootStackParamList } from '../navigation';
 
 type Props = StackScreenProps<RootStackParamList, 'Camera'>;
 
-const CameraScreen = ({ navigation }: Props) => {
+const CameraScreen = ({ navigation, route }: Props) => {
+  const { isProfilePicture } = route.params || { isProfilePicture: false };
   const [facing, setFacing] = useState<CameraType>('front');
-  const [permission, requestPermission] = useCameraPermissions();
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [audioPermission, setAudioPermission] = useState(false);
   const [albums, setAlbums] = useState<Album[] | null>(null);
   const [permissionResponse, requestMediaPermission] = MediaLibrary.usePermissions();
   const [lastPhotoUri, setLastPhotoUri] = useState<string | null>(null);
@@ -26,6 +38,7 @@ const CameraScreen = ({ navigation }: Props) => {
   const [videoUri, setVideoUri] = useState<string | null>(null);
 
   useEffect(() => {
+    checkPermissions();
     getAlbums();
     setPhoto(null);
   }, []);
@@ -37,15 +50,60 @@ const CameraScreen = ({ navigation }: Props) => {
     }, [])
   );
 
-  if (!permission) {
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.goBack(); // Navega de volta para a tela anterior
+        return true; // Impede o fechamento do aplicativo
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => {
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      };
+    }, [navigation])
+  );
+
+  const requestMicrophonePermission = async () => {
+    const { granted } = await Camera.requestMicrophonePermissionsAsync();
+    if (!granted) {
+      Alert.alert('Permissão de áudio', 'Permissão de áudio necessária para gravação de vídeo.');
+    }
+    setAudioPermission(granted);
+  };
+
+  const checkPermissions = async () => {
+    if (!cameraPermission || !cameraPermission.granted) {
+      const { status } = await requestCameraPermission();
+      if (status !== 'granted') {
+        Alert.alert('Permissão necessária', 'Precisamos da permissão da câmera para continuar.');
+      }
+    }
+
+    // Solicitar permissão de mídia (áudio)
+    await requestMicrophonePermission();
+
+    const { status: audioStatus } = await MediaLibrary.requestPermissionsAsync();
+    if (audioStatus === 'granted') {
+      setAudioPermission(true);
+    } else {
+      Alert.alert(
+        'Permissão de áudio necessária',
+        'Precisamos da permissão de áudio para gravar vídeos.'
+      );
+    }
+  };
+
+  if (!cameraPermission) {
     return <View />;
   }
 
-  if (!permission.granted) {
+  if (!cameraPermission.granted) {
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>We need your permission to show the camera</Text>
-        <Button onPress={requestPermission} title="Grant Permission" />
+        <Text style={styles.message}>Precisamos da sua permissão para mostrar a câmera</Text>
+        <Button onPress={requestCameraPermission} title="Conceder Permissão" />
       </View>
     );
   }
@@ -79,13 +137,18 @@ const CameraScreen = ({ navigation }: Props) => {
     if (cameraRef.current) {
       if (isVideoMode) {
         if (!isRecording) {
+          if (!audioPermission) {
+            Alert.alert('Erro', 'Permissão de áudio não concedida. Não é possível gravar vídeos.');
+            return;
+          }
+
           console.log('Iniciando a gravação de vídeo...');
           setIsRecording(true);
           try {
             const video = await cameraRef.current.recordAsync();
             if (video && video.uri) {
               console.log('Vídeo gravado em:', video.uri);
-              setVideoUri(video.uri); // Armazena a URI do vídeo
+              setVideoUri(video.uri);
             } else {
               console.error('Vídeo não gravado, objeto vídeo é indefinido ou não contém URI');
             }
@@ -100,16 +163,13 @@ const CameraScreen = ({ navigation }: Props) => {
           setIsRecording(false);
         }
       } else {
-        if (cameraRef.current) {
-          const photo = await cameraRef.current.takePictureAsync();
-          if (photo && photo.uri) {
-            // Verifica se photo e photo.uri estão definidos
-            console.log(photo.uri); // Exibe a URI da foto no terminal
-            setLastPhotoUri(photo.uri); // Armazena a URI da foto tirada
-            setPhoto(photo.uri);
-          } else {
-            console.error('Failed to take photo'); // Log de erro
-          }
+        const photo = await cameraRef.current.takePictureAsync();
+        if (photo && photo.uri) {
+          console.log(photo.uri);
+          setLastPhotoUri(photo.uri);
+          setPhoto(photo.uri);
+        } else {
+          console.error('Falha ao tirar foto');
         }
       }
     }
@@ -119,16 +179,20 @@ const CameraScreen = ({ navigation }: Props) => {
     setPhoto(null);
     setVideoUri(null);
   };
-  function handleForward() {
-    console.log(videoUri); // Isso vai mostrar a URI do vídeo corretamente
 
-    // Verifica se está no modo de vídeo e se a URI do vídeo é válida
+  function handleForward() {
     const uriToSend = isVideoMode && videoUri ? videoUri : photo;
 
-    navigation.navigate('EditPostInfo', {
-      photoUri: uriToSend || 'erro', // Se nenhuma URI válida, envia 'erro'
-      cameraType: facing,
-    });
+    if (isProfilePicture) {
+      navigation.navigate('EditProfile', {
+        profilePictureUri: uriToSend || 'erro',
+      });
+    } else {
+      navigation.navigate('EditPostInfo', {
+        photoUri: uriToSend || 'erro',
+        cameraType: facing,
+      });
+    }
   }
 
   return (
@@ -154,7 +218,8 @@ const CameraScreen = ({ navigation }: Props) => {
             mode={isVideoMode ? 'video' : 'picture'}
             style={styles.camera}
             facing={facing}
-            ref={cameraRef}>
+            ref={cameraRef}
+            autofocus="on">
             <View style={styles.screenContainer}>
               <View style={styles.changeModeContainer}>
                 <TouchableOpacity
@@ -176,7 +241,9 @@ const CameraScreen = ({ navigation }: Props) => {
                 <TouchableOpacity
                   style={styles.lastImage}
                   onPress={() => {
-                    navigation.navigate('Galery');
+                    if (isProfilePicture) {
+                      navigation.navigate('Galery', { isProfilePicture: true });
+                    } else navigation.navigate('Galery', { isProfilePicture: false });
                   }}>
                   {lastPhotoUri ? (
                     <Image source={{ uri: lastPhotoUri }} style={styles.lastImage} />

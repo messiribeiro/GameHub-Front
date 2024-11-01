@@ -64,7 +64,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
+    // setLoading(true);
     try {
       const response = await api.get(`api/users/${profileUserId}`);
       setUserData(response.data);
@@ -219,8 +219,8 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         contentContainerStyle={styles.posts}
         numColumns={numColumns}
         key={`grid-${numColumns}`}
-        refreshing={refreshing} // Set refreshing state
-        onRefresh={handleRefresh} // Handle refresh
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
       />
       <TabMenu navigation={navigation} />
     </View>
@@ -302,12 +302,12 @@ const styles = StyleSheet.create({
   line: {
     height: 1,
     backgroundColor: '#444',
-    marginVertical: 10,
+    marginTop: 10,
   },
   post: {
-    flex: 1,
-    margin: 5,
-    aspectRatio: 1,
+    width: '33.33%', // Ajusta a largura do post para 1/3 da tela
+    margin: 5, // Mantém uma margem ao redor do post
+    aspectRatio: 1, // Mantém a proporção de aspecto quadrado
   },
   postImage: {
     width: '100%',

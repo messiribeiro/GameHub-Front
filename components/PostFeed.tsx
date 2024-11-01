@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { pt } from 'date-fns/locale/pt';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import api from 'services/api';
@@ -21,6 +21,9 @@ interface UserData {
   id: number;
   username: string;
   profilePictureUrl: string;
+  Subscription?: {
+    isActive: boolean;
+  };
 }
 
 interface PostFeedProps {
@@ -38,6 +41,8 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
   const [likesCount, setLikesCount] = useState<number>(0);
   const [commentsCount, setCommentsCount] = useState<number>(0);
   const [hasLiked, setHasLiked] = useState<boolean>(false);
+  const [lastTap, setLastTap] = useState<number | null>(null);
+  const heartScale = useRef(new Animated.Value(0)).current;
   const videoRef = useRef<any>(null);
 
   const fetchUser = async (authorId: number) => {
@@ -60,23 +65,43 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
       await api.post(`/api/post/${post.id}/like`, { userId });
       setLikesCount((prev) => prev + 1);
       setHasLiked(true);
+      animateHeart();
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        if (error.response) {
-          if (error.response.status === 409) {
-            setLikesCount((prev) => Math.max(prev - 1, 0));
-            setHasLiked(false);
-            console.log('Usuário descurtiu este post.');
-          } else {
-            console.error('Erro ao dar like:', error.response.data);
-          }
+        if (error.response && error.response.status === 409) {
+          setLikesCount((prev) => Math.max(prev - 1, 0));
+          setHasLiked(false);
+          console.log('Usuário descurtiu este post.');
         } else {
-          console.error('Erro sem resposta do servidor:', error.message);
+          console.error('Erro ao dar like:', error.response?.data || error.message);
         }
-      } else {
-        console.error('Erro desconhecido ao dar like:', error);
       }
     }
+  };
+
+  const animateHeart = () => {
+    heartScale.setValue(0.5);
+    Animated.spring(heartScale, {
+      toValue: 1.5,
+      friction: 2,
+      tension: 160,
+      useNativeDriver: true,
+    }).start(() => {
+      Animated.timing(heartScale, {
+        toValue: 0,
+        duration: 100,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
+  const handleDoubleTap = () => {
+    const now = Date.now();
+    if (lastTap && now - lastTap < 300) {
+      handleLike();
+    }
+    setLastTap(now);
   };
 
   useEffect(() => {
@@ -138,42 +163,51 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
           />
         </TouchableOpacity>
         <TouchableOpacity onPress={navigateToProfile}>
-          <Text style={styles.username}>@{user?.username || 'Desconhecido'}</Text>
+          <View style={styles.usernameContainer}>
+            <Text style={styles.username}>@{user?.username || 'Desconhecido'}</Text>
+            {user?.Subscription?.isActive && (
+              <MaterialIcons
+                name="verified"
+                size={16}
+                color="#FFC000"
+                style={styles.verifiedIcon}
+              />
+            )}
+          </View>
         </TouchableOpacity>
       </View>
       <Text style={styles.postTitle}>{post.content}</Text>
-      {isVideo(post.imageUrl) ? (
-        <View>
-          <TouchableOpacity onPress={navigateToFullScreen}>
-            <Video
-              ref={videoRef}
-              source={{ uri: post.imageUrl }}
-              style={styles.postContent}
-              resizeMode={VideoResizeMode.COVER}
-              shouldPlay={activeVideo === post.id}
-              isMuted={isMuted}
-              onError={handleMediaError}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.muteButton} onPress={toggleMute}>
-            <MaterialIcons name={isMuted ? 'volume-off' : 'volume-up'} size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <Image
-          style={styles.postContent}
-          source={{ uri: post.imageUrl }}
-          onError={handleMediaError}
-        />
-      )}
+      <TouchableOpacity onPress={handleDoubleTap} activeOpacity={1}>
+        {isVideo(post.imageUrl) ? (
+          <View>
+            <TouchableOpacity onPress={navigateToFullScreen}>
+              <Video
+                ref={videoRef}
+                source={{ uri: post.imageUrl }}
+                style={styles.postContent}
+                resizeMode={VideoResizeMode.COVER}
+                shouldPlay={activeVideo === post.id}
+                isMuted={isMuted}
+                onError={handleMediaError}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.muteButton} onPress={toggleMute}>
+              <MaterialIcons name={isMuted ? 'volume-off' : 'volume-up'} size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Image
+            style={styles.postContent}
+            source={{ uri: post.imageUrl }}
+            onError={handleMediaError}
+          />
+        )}
+        <Animated.View style={[styles.heartIcon, { transform: [{ scale: heartScale }] }]}>
+          <MaterialIcons name="favorite" size={80} color="rgba(255, 65, 65, 0.8)" />
+        </Animated.View>
+      </TouchableOpacity>
       <View style={styles.dataView}>
         <View style={styles.postData}>
-          <TouchableOpacity
-            onPress={() => onCommentButtonClick(post.id)}
-            style={styles.commentsContainer}>
-            <Icon name="message-circle" size={20} color="#fff" />
-            <Text style={styles.comments}>{commentsCount}</Text>
-          </TouchableOpacity>
           <TouchableOpacity onPress={handleLike} style={styles.likesContainer}>
             <MaterialIcons
               name={hasLiked ? 'favorite' : 'favorite-border'}
@@ -182,12 +216,17 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
             />
             <Text style={styles.likes}>{likesCount}</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => onCommentButtonClick(post.id)}
+            style={styles.commentsContainer}>
+            <Icon name="message-circle" size={20} color="#fff" />
+            <Text style={styles.comments}>{commentsCount}</Text>
+          </TouchableOpacity>
         </View>
         <Text style={styles.time}>
           {formatDistanceToNow(new Date(post.createdAt), {
             addSuffix: true,
             locale: pt,
-            includeSeconds: false,
           }).replace('aproximadamente', '')}
         </Text>
       </View>
@@ -209,10 +248,15 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 50,
   },
+  usernameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginLeft: 5,
+  },
   username: {
     color: 'white',
     textAlign: 'center',
-    marginLeft: 5,
   },
   postTitle: {
     color: 'white',
@@ -235,34 +279,41 @@ const styles = StyleSheet.create({
   dataView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingLeft: '2%',
-    paddingRight: '2%',
+    paddingHorizontal: 15,
     marginTop: 10,
   },
   postData: {
     flexDirection: 'row',
-    alignItems: 'center',
     gap: 10,
+  },
+  commentsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
   },
   comments: {
     color: 'white',
+    marginLeft: 5,
+  },
+  likesContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   likes: {
     color: 'white',
+    marginLeft: 5,
   },
   time: {
     color: 'white',
     fontSize: 12,
   },
-  likesContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+  verifiedIcon: {
+    top: 1,
   },
-  commentsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+  heartIcon: {
+    position: 'absolute',
+    top: '45%',
+    left: '45%',
   },
 });
 

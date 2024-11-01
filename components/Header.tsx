@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
     paddingRight: '5%',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 45,
+    marginTop: 30,
   },
   userImage: {
     width: 40,

@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import Dashboard from 'screens/Dashboard';
 import CameraScreen from 'screens/camera';
 import Chat from 'screens/chat';
 import ChatWindow from 'screens/chatWindow';
+import Dashboard from 'screens/dashboard';
 import EditPostInfo from 'screens/editPostInfo';
 import EditProfile from 'screens/editProfile';
 import FindGamer from 'screens/findGamer';
@@ -44,14 +44,14 @@ export type RootStackParamList = {
     receiverId: number;
     receiverName: string; // Add receiverName here
   };
-  Camera: undefined;
+  Camera: { isProfilePicture: boolean };
   PhotoPreview: { photoUri: string };
   EditPostInfo: { photoUri: string; cameraType: string };
-  Galery: undefined;
+  Galery: { isProfilePicture: boolean };
   FullScreen: { postId: string };
-  EditProfile: undefined;
+  EditProfile: { profilePictureUri: string };
   Subscribe: undefined;
-  GameRegister: { imageUri: string };
+  GameRegister: { imageUri?: string };
   GameImageSelect: undefined;
   GamePreview: undefined;
   Dashboard: undefined;

@@ -17,7 +17,8 @@ import { RootStackParamList } from '../navigation';
 
 type Props = StackScreenProps<RootStackParamList, 'Galery'>;
 
-const Gallery = ({ navigation }: Props) => {
+const Gallery = ({ navigation, route }: Props) => {
+  const { isProfilePicture } = route.params;
   const [media, setMedia] = useState<MediaLibrary.Asset[]>([]);
   const [hasNext, setHasNext] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -41,7 +42,9 @@ const Gallery = ({ navigation }: Props) => {
     try {
       const mediaList = await MediaLibrary.getAssetsAsync({
         first: 200,
-        mediaType: [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video],
+        mediaType: isProfilePicture
+          ? [MediaLibrary.MediaType.photo]
+          : [MediaLibrary.MediaType.photo, MediaLibrary.MediaType.video],
         sortBy: MediaLibrary.SortBy.creationTime,
         after,
       });
@@ -70,21 +73,31 @@ const Gallery = ({ navigation }: Props) => {
 
     // Função para lidar com o toque na imagem
     const handlePress = () => {
-      navigation.navigate('EditPostInfo', {
-        photoUri: item.uri,
-        cameraType: isImage ? 'front' : 'back', // ou qualquer lógica que você queira
-      });
+      if (isProfilePicture) {
+        navigation.navigate('EditProfile', {
+          profilePictureUri: item.uri,
+        });
+      } else {
+        navigation.navigate('EditPostInfo', {
+          photoUri: item.uri,
+          cameraType: isImage ? 'front' : 'back', // ou qualquer lógica que você queira
+        });
+      }
     };
 
     return (
       <View style={styles.itemContainer}>
         <TouchableOpacity onPress={handlePress} style={styles.imageContainer}>
           <Image source={{ uri: item.uri }} style={styles.thumbnail} />
-          <Icon name={isImage ? 'image' : 'video'} size={24} color="#fff" style={styles.icon} />
+          {/* Mostra o ícone apenas se não for uma imagem de perfil */}
+          {!isProfilePicture && (
+            <Icon name={isImage ? 'image' : 'video'} size={24} color="#fff" style={styles.icon} />
+          )}
         </TouchableOpacity>
       </View>
     );
   };
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Imagens da galeria</Text>
@@ -154,7 +167,6 @@ const styles = StyleSheet.create({
   flatList: {
     paddingHorizontal: 0,
   },
-
   loadingContainer: {
     justifyContent: 'center',
     alignItems: 'center',

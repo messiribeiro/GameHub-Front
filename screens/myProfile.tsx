@@ -2,11 +2,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import TabMenu from 'components/TabMenu';
+import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
 import Verified from 'react-native-vector-icons/MaterialIcons';
 import api from 'services/api';
-
 
 import { RootStackParamList } from '../navigation';
 
@@ -26,33 +26,63 @@ interface UserStats {
   followingCount: number;
 }
 
+interface Game {
+  id: number;
+  name: string;
+  gameimageUrl: string | null;
+}
+
+interface Post {
+  id: number;
+  content: string;
+  imageUrl: string;
+  authorId: number;
+  createdAt: string;
+}
+
 // Defining the type of props
 type Props = StackScreenProps<RootStackParamList, 'MyProfile'>;
 
 const MyProfile: React.FC<Props> = ({ navigation }) => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
+  const [userGames, setUserGames] = useState<Game[]>([]); // State for user games
   const [loading, setLoading] = useState<boolean>(true); // State for loading
+  const [posts, setPosts] = useState<Post[]>([]); // State for user posts
+  const [refreshing, setRefreshing] = useState(false); // State for refreshing
+
+  const getUserData = async () => {
+    const profileUserId = await AsyncStorage.getItem("userId");
+
+    const userResponse = await api.get(`api/users/${profileUserId}`);
+    setUserData(userResponse.data);
+
+    // Fetch user stats
+    const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
+    setUserStats(statsResponse.data);
+    
+    // Fetch user games
+    const gamesResponse = await api.get(`api/games/user/${profileUserId}`);
+    setUserGames(gamesResponse.data);
+
+    // Fetch user posts
+    const postsResponse = await api.get(`api/post/user/${profileUserId}`);
+    setPosts(postsResponse.data);
+    
+    setLoading(false); 
+  };
 
   useEffect(() => {
-    const getUserData = async () => {
-      const profileUserId = await AsyncStorage.getItem("userId");
-
-      console.log(profileUserId);
-      const userResponse = await api.get(`api/users/${profileUserId}`);
-
-      setUserData(userResponse.data);
-
-      // Fetch user stats
-      const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
-      setUserStats(statsResponse.data);
-      setLoading(false); 
-    };
     getUserData();
   }, []);
 
   const handleEditProfile = () => {
     navigation.navigate('EditProfile');
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    getUserData().finally(() => setRefreshing(false)); // Refetch user data and stop refreshing
   };
 
   if (loading) {
@@ -62,6 +92,26 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
       </View>
     );
   }
+
+  const renderPost = ({ item }: { item: Post }) => {
+    const isVideo = item.imageUrl.endsWith('.mp4');
+
+    return (
+      <View style={styles.post}>
+        {isVideo ? (
+          <Video
+            source={{ uri: item.imageUrl }}
+            style={styles.video}
+            shouldPlay={false}
+            resizeMode={VideoResizeMode.COVER}
+            isLooping
+          />
+        ) : (
+          <Image source={{ uri: item.imageUrl }} style={styles.postImage} />
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -88,16 +138,32 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
         <Text style={styles.bio}>
           {userData?.bio ? userData.bio : "Clique em editar para adicionar um bio."}
         </Text>
+        
         <View style={styles.followerInformation}>
           <Text style={styles.followerText}>{userStats ? userStats.followingCount : 0} seguindo</Text>
           <Text style={styles.followerText}>{userStats ? userStats.followersCount : 0} seguidores</Text>
-          <Text style={styles.followerText}>45 Publicações</Text>
+          <Text style={styles.followerText}>{posts.length} Publicações</Text>
         </View>
+        <View style={styles.line} />
       </View>
-      <View style={styles.line} />
-      <View style={styles.posts}>
-        <Text style={styles.messageText}>@{userData ? userData.username : "..."} ainda não fez uma publicação</Text>
-      </View>
+
+      <FlatList
+        data={posts}
+        style={styles.flatList}
+        renderItem={renderPost}
+        keyExtractor={(item) => item.id.toString()}
+        contentContainerStyle={styles.posts}
+        numColumns={3}
+        refreshing={refreshing}
+        onRefresh={handleRefresh}
+      />
+      
+      {posts.length === 0 && (
+        <View style={styles.posts}>
+          <Text style={styles.messageText}>@{userData ? userData.username : "..."} ainda não fez uma publicação</Text>
+        </View>
+      )}
+
       <TabMenu navigation={navigation} />
     </View>
   );
@@ -162,7 +228,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   followerInformation: {
-    marginTop: 15,
+    marginTop: 10,
     flexDirection: "row",
     justifyContent: "space-between",
   },
@@ -173,17 +239,8 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 13,
   },
-  line: {
-    width: "100%",
-    height: 1,
-    backgroundColor: "#FFFFFF",
-    opacity: 0.19,
-    marginTop: 15,
-  },
   posts: {
-    height: "40%",
-    alignItems: "center",
-    justifyContent: "center",
+    paddingBottom: 20,
   },
   messageText: {
     color: "white",
@@ -199,10 +256,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 5,
     marginTop: 5,
-    
   },
   verifiedIcon: {
     top: 1,
+  },
+  // Styles for posts
+  post: {
+    width: '33.33%',
+    margin: 5,
+    aspectRatio: 1,
+  },
+  postImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+
+  },
+  video: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+  },
+  line: {
+    height: 1,
+    backgroundColor: '#444',
+    marginTop: 10,
+  },
+  flatList: {
+    top: -8,
+
   }
 });
 

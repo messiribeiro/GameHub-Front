@@ -194,7 +194,6 @@ const Home = ({ navigation }: Props) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#fff" />
-        <Text style={styles.loadingText}>Carregando...</Text>
       </View>
     );
   }

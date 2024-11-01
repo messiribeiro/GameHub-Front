@@ -5,37 +5,53 @@ import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api'; // Importa seu serviço de API
 
 interface Comment {
-  id: number; // ou string, dependendo do tipo do ID
+  id: number;
   content: string;
   user: {
     username: string;
+    profilePictureUrl: string;
   };
   createdAt: string;
 }
 
+interface UserDetails {
+  id: number;
+  username: string;
+  profilePictureUrl: string;
+}
+
 interface CommentSectionProps {
-  postId: number; // ID do post
-  onClose: () => void; // Função para fechar o modal
+  postId: number;
+  onClose: () => void;
 }
 
 const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
 
   useEffect(() => {
-    const fetchUserId = async () => {
+    const fetchUserData = async () => {
       const id = await AsyncStorage.getItem('userId');
       setUserId(id);
+
+      if (id) {
+        try {
+          const response = await api.get(`/api/users/${id}`);
+          setUserDetails(response.data); // Armazena os detalhes do usuário
+        } catch (error) {
+          console.error('Erro ao buscar detalhes do usuário:', error);
+        }
+      }
     };
 
-    fetchUserId();
+    fetchUserData();
   }, []);
 
   const fetchComments = async () => {
     try {
       const response = await api.get(`api/post/${postId}/details`);
-      console.log('Comentários recebidos:', response.data.comments);
       setComments(response.data.comments);
     } catch (error) {
       console.error('Erro ao buscar comentários:', error);
@@ -43,18 +59,18 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
   };
 
   useEffect(() => {
-    fetchComments(); // Chama a função ao montar o componente
+    fetchComments();
   }, [postId]);
 
   const handleAddComment = async () => {
     if (newComment.trim()) {
       try {
         await api.post(`api/post/${postId}/comment`, {
-          userId, // Você deve pegar o ID do usuário logado
+          userId,
           content: newComment,
         });
-        setNewComment(''); // Limpa o campo de entrada
-        fetchComments(); // Recarrega os comentários
+        setNewComment('');
+        fetchComments();
       } catch (error) {
         console.error('Erro ao adicionar comentário:', error);
       }
@@ -66,28 +82,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
     const commentDate = new Date(dateString);
     const diffInSeconds = Math.floor((now.getTime() - commentDate.getTime()) / 1000);
 
-    if (diffInSeconds < 60) {
-      return 'Agora mesmo';
-    } else if (diffInSeconds < 3600) {
-      // menos de 1 hora
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `há ${minutes} min`;
-    } else if (diffInSeconds < 86400) {
-      // menos de 1 dia
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `há ${hours} h`;
-    } else if (diffInSeconds < 2592000) {
-      // menos de 30 dias
-      const days = Math.floor(diffInSeconds / 86400);
-      return `há ${days} d`;
-    } else if (diffInSeconds < 31536000) {
-      // menos de 1 ano
-      const months = Math.floor(diffInSeconds / 2592000);
-      return `há ${months} mês`;
-    } else {
-      const years = Math.floor(diffInSeconds / 31536000);
-      return `há ${years} ano`;
-    }
+    if (diffInSeconds < 60) return 'Agora mesmo';
+    else if (diffInSeconds < 3600) return `há ${Math.floor(diffInSeconds / 60)} min`;
+    else if (diffInSeconds < 86400) return `há ${Math.floor(diffInSeconds / 3600)} h`;
+    else if (diffInSeconds < 2592000) return `há ${Math.floor(diffInSeconds / 86400)} d`;
+    else if (diffInSeconds < 31536000) return `há ${Math.floor(diffInSeconds / 2592000)} mês`;
+    else return `há ${Math.floor(diffInSeconds / 31536000)} ano`;
   };
 
   return (
@@ -96,14 +96,12 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
       <FlatList
         style={styles.commentsContainer}
         data={comments}
-        keyExtractor={(item, index) => `${item.content}-${index}`} // Chave única
+        keyExtractor={(item, index) => `${item.content}-${index}`}
         renderItem={({ item }) => (
           <View style={styles.comment}>
             <View style={styles.photoAndContent}>
               <Image
-                source={{
-                  uri: 'https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png',
-                }} // Placeholder para imagem do usuário
+                source={{ uri: item.user.profilePictureUrl || 'https://via.placeholder.com/45' }}
                 style={styles.userImage}
               />
               <View style={styles.textContent}>
@@ -114,9 +112,6 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
                 <Text style={styles.commentText}>{item.content}</Text>
               </View>
             </View>
-            {/* <View style={styles.likeButton}>
-              <Icon name="heart" size={15} color="#fff" />
-            </View> */}
           </View>
         )}
       />
@@ -125,8 +120,10 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
         <View style={styles.inputAndImage}>
           <Image
             source={{
-              uri: 'https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png',
-            }} // Placeholder para imagem do usuário
+              uri:
+                userDetails?.profilePictureUrl ||
+                'https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png',
+            }}
             style={styles.myPhoto}
           />
           <TextInput
@@ -135,14 +132,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
             placeholder="Adicione um comentário"
             value={newComment}
             onChangeText={setNewComment}
-            onSubmitEditing={handleAddComment} // Adiciona o comentário ao pressionar "Enter"
+            onSubmitEditing={handleAddComment}
           />
         </View>
       </View>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
