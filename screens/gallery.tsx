@@ -50,6 +50,7 @@ const Gallery = ({ navigation, route }: Props) => {
       });
 
       if (mediaList.assets.length > 0) {
+        console.log('Assets loaded:', mediaList.assets); // Log de depuração
         setMedia((prevMedia) => [...prevMedia, ...mediaList.assets]);
         setAfter(mediaList.assets[mediaList.assets.length - 1].id);
       }
