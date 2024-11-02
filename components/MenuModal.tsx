@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     width: '80%',
     backgroundColor: '#141414',
     padding: 20,
-    paddingTop: 50,
+    paddingTop: 25,
     elevation: 5,
     shadowColor: '#000',
     shadowOpacity: 0.25,

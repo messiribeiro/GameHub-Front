@@ -68,8 +68,7 @@ type RootStackProps = {
     config: {
       screens: {
         Home: string;
-        Success: string;
-        Cancel: string;
+        Subscribe: string;
       };
     };
   };

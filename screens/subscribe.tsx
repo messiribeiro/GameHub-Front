@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
-import * as WebBrowser from 'expo-web-browser';
+import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
-import api from 'services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'Subscribe'>;
 
@@ -15,47 +15,47 @@ const Subscribe = ({ navigation }: Props) => {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const storedUserId = await AsyncStorage.getItem("userId");
+      const storedUserId = await AsyncStorage.getItem('userId');
       setUserId(storedUserId);
     };
-    
+
     fetchUserId();
   }, []);
 
   const initializePayment = async (type: string) => {
     try {
-        const successUrl = 'https://youtube.com';
-        const cancelUrl = 'https://youtube.com';
+      const successUrl = 'https://redirect-to-app-gh.vercel.app/?vercelToolbarCode=OoL1ZXCFM_ep3wf';
+      const cancelUrl = 'https://youtube.com';
 
-        const response = await api.post('/api/subscriptions/checkout-session', {
-            userId: userId,
-            type: type,
-            successUrl: successUrl,
-            cancelUrl: cancelUrl,
-        });
+      const response = await api.post('/api/subscriptions/checkout-session', {
+        userId,
+        type,
+        successUrl,
+        cancelUrl,
+      });
 
-        const { url } = response.data;
+      const { url } = response.data;
 
-        const result = await WebBrowser.openBrowserAsync(url);
+      const result = await WebBrowser.openBrowserAsync(url);
 
-        if (result.type === 'cancel' || result.type === 'dismiss') {
-            console.log('Pagamento foi cancelado ou a página foi fechada');
-        } else {
-            console.log('Possível sucesso, ou verifique o backend para confirmação');
-            // Redirecionar para a página inicial após o pagamento
-            navigation.navigate('Home'); 
-        }
+      if (result.type === 'cancel' || result.type === 'dismiss') {
+        console.log('Pagamento foi cancelado ou a página foi fechada');
+      } else {
+        console.log('Possível sucesso, ou verifique o backend para confirmação');
+        // Redirecionar para a página inicial após o pagamento
+        navigation.navigate('Home');
+      }
     } catch (error) {
-        console.error('Erro ao inicializar o pagamento:', error);
+      console.error('Erro ao inicializar o pagamento:', error);
     }
-};
+  };
 
   const handleNavigationGameDevBasic = () => {
-    initializePayment("GameDev Basic");
+    initializePayment('GameDev Basic');
   };
 
   const handleNavigationGameDev = () => {
-    initializePayment("GameDev");
+    initializePayment('GameDev');
   };
 
   return (

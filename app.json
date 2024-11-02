@@ -6,7 +6,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "myapp",
+    "scheme": "gamehub",
     "experiments": {
       "tsconfigPaths": true
     },
@@ -48,7 +48,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#6100EA"
       },
       "permissions": [
         "android.permission.RECORD_AUDIO",
@@ -57,7 +57,19 @@
         "android.permission.READ_EXTERNAL_STORAGE"
       ],
       "package": "com.droffyzin.GameHub",
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "pan",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "gamehub",
+              "host": "*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "extra": {
       "eas": {
