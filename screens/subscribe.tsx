@@ -25,7 +25,7 @@ const Subscribe = ({ navigation }: Props) => {
   const initializePayment = async (type: string) => {
     try {
       const successUrl = 'https://redirect-to-app-gh.vercel.app/?vercelToolbarCode=OoL1ZXCFM_ep3wf';
-      const cancelUrl = 'https://youtube.com';
+      const cancelUrl = 'https://redirect-to-app-gh.vercel.app/cancel';
 
       const response = await api.post('/api/subscriptions/checkout-session', {
         userId,
