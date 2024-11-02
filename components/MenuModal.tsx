@@ -126,10 +126,10 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
       </View>
 
       <View style={styles.pagesAndLogoutContainer}>
-        <View style={styles.settingsView}>
+        {/* <View style={styles.settingsView}>
           <Icon name="settings" size={20} color="#fff" />
           <Text style={styles.text}>Configurações</Text>
-        </View>
+        </View> */}
         <TouchableOpacity style={styles.logoutView} onPress={handleLogout}>
           <Icon name="log-out" size={20} color="#fff" />
           <Text style={styles.text}>Sair</Text>
