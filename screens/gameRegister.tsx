@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
+
 import {
   View,
   Text,
@@ -13,7 +15,7 @@ import {
   Alert,
   BackHandler,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import {Feather} from '@expo/vector-icons';
 
 import { RootStackParamList } from '../navigation';
 
@@ -101,6 +103,8 @@ const GameRegister = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.header} />
       <Text style={styles.title}>Informe os dados do seu jogo</Text>
 
@@ -181,7 +185,7 @@ const GameRegister = ({ navigation, route }: Props) => {
             </>
           ) : (
             <>
-              <Icon name="image" size={20} color="#8A8A8A" />
+              <Feather name="image" size={20} color="#8A8A8A" />
               <Text style={styles.textImage}>Imagem do jogo</Text>
             </>
           )}

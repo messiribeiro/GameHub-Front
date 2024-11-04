@@ -9,11 +9,13 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
+  RefreshControl,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api';
+import { Feather } from '@expo/vector-icons';
+import api from '../services/api';
 
 import { RootStackParamList } from '../navigation';
+import { StatusBar } from 'react-native';
 
 interface Game {
   id: number;
@@ -25,10 +27,13 @@ interface Game {
 
 type Props = StackScreenProps<RootStackParamList, 'Dashboard'>;
 
-const Dashboard = ({ navigation }: Props) => {
+const Dashboard = ({ navigation, route }: Props) => {
   const [userGames, setUserGames] = useState<Game[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const { from } = route.params || {}; // Desestrutura o parâmetro 'from'
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -50,6 +55,12 @@ const Dashboard = ({ navigation }: Props) => {
     loadUserId();
   }, []);
 
+  useEffect(() => {
+    if (from === 'GamePreview') {
+      refreshGames(); // Recarrega os jogos se vier de GamePreview
+    }
+  }, [from]);
+
   const fetchUserGames = async (id: string) => {
     try {
       const response = await api.get(`/api/games/user/${id}`);
@@ -59,8 +70,24 @@ const Dashboard = ({ navigation }: Props) => {
     }
   };
 
+  const refreshGames = async () => {
+    setLoading(true);
+    if (userId) {
+      await fetchUserGames(userId);
+    }
+    setLoading(false);
+  };
+
   const handleGameregister = () => {
     navigation.navigate('GameRegister', { imageUri: null });
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    if (userId) {
+      await fetchUserGames(userId);
+    }
+    setRefreshing(false);
   };
 
   if (loading) {
@@ -73,9 +100,11 @@ const Dashboard = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-left" size={24} color="#fff" />
+          <Feather name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Dashboard</Text>
       </View>
@@ -84,7 +113,7 @@ const Dashboard = ({ navigation }: Props) => {
         <View style={styles.titleRow}>
           <Text style={styles.sectionTitle}>Seus jogos</Text>
           <TouchableOpacity onPress={handleGameregister}>
-            <Icon name="plus-square" size={24} color="#fff" />
+            <Feather name="plus-square" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
       )}
@@ -109,6 +138,9 @@ const Dashboard = ({ navigation }: Props) => {
               </View>
             </View>
           )}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />
+          }
         />
       ) : (
         <View style={styles.noGamesContainer}>
@@ -127,7 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#121212',
-    paddingTop: 40,
+    paddingTop: 2,
   },
   loadingContainer: {
     flex: 1,

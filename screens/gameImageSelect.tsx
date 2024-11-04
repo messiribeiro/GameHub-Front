@@ -1,6 +1,8 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import * as MediaLibrary from 'expo-media-library';
 import React, { useState, useEffect } from 'react';
+import { StatusBar } from 'react-native';
+
 import {
   View,
   FlatList,
@@ -11,7 +13,6 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
 
 import { RootStackParamList } from '../navigation';
 
@@ -77,6 +78,8 @@ const GameImageSelect = ({ navigation }: Props) => {
 
     return (
       <View style={styles.itemContainer}>
+                <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
         <TouchableOpacity onPress={handlePress} style={styles.imageContainer}>
           <Image source={{ uri: item.uri }} style={styles.thumbnail} />
           {/* Removido o ícone */}
@@ -86,6 +89,8 @@ const GameImageSelect = ({ navigation }: Props) => {
   };
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <Text style={styles.text}>Imagens da galeria</Text>
       <FlatList
         style={styles.flatList}

@@ -6,8 +6,10 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
-import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api';
+import {Feather} from '@expo/vector-icons';
+import api from '../services/api';
+import { StatusBar } from 'react-native';
+
 
 import { RootStackParamList } from '../navigation';
 
@@ -138,6 +140,8 @@ const ChatWindow = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.header}>
         <Text style={styles.headerText}>@{receiverName}</Text>
       </View>
@@ -222,14 +226,14 @@ const ChatWindow = ({ navigation, route }: Props) => {
             value={inputValue}
             onChangeText={setInputValue}
           />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={handleSendMessage}>
-              <Icon name="arrow-up" size={20} color="#000" />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={handleSendMessage} style={styles.buttonContainer}>
+            
+              <Feather name="arrow-up" size={20} color="#000" />
+            
+          </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.cameraContainer} onPress={handleCameraPress}>
-          <Icon name="camera" size={20} color="#000" />
+          <Feather name="camera" size={20} color="#000" />
         </TouchableOpacity>
       </View>
     </View>

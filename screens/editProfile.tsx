@@ -4,7 +4,9 @@ import { StackScreenProps } from '@react-navigation/stack';
 import * as FileSystem from 'expo-file-system';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import {MaterialIcons} from '@expo/vector-icons';
+import { StatusBar } from 'react-native';
+
 
 import { RootStackParamList } from '../navigation';
 import api from '../services/api';
@@ -49,97 +51,102 @@ const EditProfile: React.FC<Props> = ({ navigation, route }) => {
   useEffect(() => {
     // Atualizar a URL da imagem do perfil se a URI estiver disponível
     if (profilePictureUri) {
-      setProfilePictureUrl(profilePictureUri); // Atualizar com a URI da imagem
+      setProfilePictureUrl(profilePictureUri); 
     }
   }, [profilePictureUri]); // Dependência de profilePictureUri
 
-const handleSave = async () => {
-  try {
-    const userId = await AsyncStorage.getItem('userId');
-
-    if (!username) {
-      Alert.alert('Erro', 'O campo Nome de usuário precisa ser preenchido.');
-      return;
-    }
-
-    // Criar FormData apenas se houver alterações
-    const updateData = new FormData();
-    let hasChanges = false; // Variável para verificar se houve alterações
-
-    if (username !== userData?.username) {
-      updateData.append('username', username);
-      hasChanges = true; // Marcar que houve uma alteração
-    }
-
-    if (bio !== userData?.bio) {
-      updateData.append('bio', bio);
-      hasChanges = true; // Marcar que houve uma alteração
-    }
-
-    if (profilePictureUrl) {
-      const fileInfo = await FileSystem.getInfoAsync(profilePictureUrl);
-      if (fileInfo.exists) {
-        const fileExtension = fileInfo.uri.split('.').pop()?.toLowerCase();
-        console.log('Extensão do arquivo:', fileExtension); // Verifique a extensão do arquivo
-
-        let fileType = '';
-        if (fileExtension === 'png') {
-          fileType = 'image/png';
-        } else if (fileExtension === 'jpeg' || fileExtension === 'jpg') {
-          fileType = 'image/jpeg';
-        } else {
-          console.error('Tipo de arquivo não suportado:', fileExtension);
-          return;
-        }
-
-        const file = {
-          uri: profilePictureUrl,
-          name: `profilePhotoByUser-${userId}.${fileExtension}`,
-          type: fileType,
-        };
-
-        updateData.append('profilePicture', file as any);
-        hasChanges = true;
-      } else {
-        console.error('Arquivo não existe no caminho especificado.');
+  const handleSave = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+  
+      if (!username) {
+        Alert.alert('Erro', 'O campo Nome de usuário precisa ser preenchido.');
         return;
       }
-    } else {
-      console.error('photoUri não está definido.');
-      return;
-    }
-
-    // Se não houver alterações, apenas voltar
-    if (!hasChanges) {
-      navigation.goBack();
-      return;
-    }
-
-    if (userId) {
-      const response = await api.put(`/api/users/${userId}`, updateData, {
-        headers: {
-          'Content-Type': 'multipart/form-data', // Necessário para envio de FormData
-        },
-      });
-      if (response.status === 200) {
+  
+      // Criar FormData apenas se houver alterações
+      const updateData = new FormData();
+      let hasChanges = false;
+  
+      if (username !== userData?.username) {
+        updateData.append('username', username);
+        hasChanges = true;
+      }
+  
+      if (bio !== userData?.bio) {
+        updateData.append('bio', bio);
+        hasChanges = true;
+      }
+  
+      // Verificar se a imagem do perfil deve ser atualizada
+      if (profilePictureUri) {
+        const isExternalUrl = profilePictureUrl.startsWith('http://') || profilePictureUrl.startsWith('https://');
+        
+        if (!isExternalUrl) {
+          const fileInfo = await FileSystem.getInfoAsync(profilePictureUrl);
+          if (fileInfo.exists) {
+            const fileExtension = fileInfo.uri.split('.').pop()?.toLowerCase();
+            let fileType = '';
+  
+            if (fileExtension === 'png') {
+              fileType = 'image/png';
+            } else if (fileExtension === 'jpeg' || fileExtension === 'jpg') {
+              fileType = 'image/jpeg';
+            } else {
+              console.error('Tipo de arquivo não suportado:', fileExtension);
+              return;
+            }
+  
+            const file = {
+              uri: fileInfo.uri,
+              name: `profilePhotoByUser-${userId}.${fileExtension}`,
+              type: fileType,
+            };
+  
+            updateData.append('profilePicture', file as any);
+            hasChanges = true; // Marcar que houve uma alteração na imagem
+          } else {
+            console.error('Arquivo não existe no caminho especificado.');
+            return;
+          }
+        } else {
+          updateData.append('profilePictureUrl', profilePictureUrl);
+          hasChanges = true; // Marcar que houve uma alteração na imagem externa
+        }
+      }
+  
+      if (!hasChanges) {
         navigation.goBack();
+        return;
+      }
+  
+      if (userId) {
+        const response = await api.put(`/api/users/${userId}`, updateData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        if (response.status === 200) {
+          navigation.goBack();
+        } else {
+          Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
+        }
+      }
+    } catch (error: any) {
+      if (error.response) {
+        console.error('Erro na resposta da API:', error.response.data);
+        Alert.alert('Erro', `Erro na resposta da API: ${error.response.data.message}`);
+      } else if (error instanceof Error) {
+        console.error('Erro ao configurar a requisição:', error.message);
+        Alert.alert('Erro', 'Erro ao processar sua solicitação: ' + error.message);
       } else {
-        Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
+        console.error('Erro desconhecido:', error);
+        Alert.alert('Erro', 'Ocorreu um erro desconhecido.');
       }
     }
-  } catch (error: any) { // Usando `any` para evitar o erro de tipo 'unknown'
-    if (error.response) {
-      console.error('Erro na resposta da API:', error.response.data);
-      Alert.alert('Erro', `Erro na resposta da API: ${error.response.data.message}`);
-    } else if (error instanceof Error) {
-      console.error('Erro ao configurar a requisição:', error.message);
-      Alert.alert('Erro', 'Erro ao processar sua solicitação: ' + error.message);
-    } else {
-      console.error('Erro desconhecido:', error);
-      Alert.alert('Erro', 'Ocorreu um erro desconhecido.');
-    }
-  }
-};
+  };
+  
+  
 
 
   const navigateToCamera = () => {
@@ -148,6 +155,8 @@ const handleSave = async () => {
 
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.photoContainer}>
         <Text style={styles.label}>Foto de Perfil</Text>
         <View style={styles.imageContainer}>
@@ -156,7 +165,7 @@ const handleSave = async () => {
             style={styles.userImage}
           />
           <TouchableOpacity style={styles.cameraIcon} onPress={navigateToCamera}>
-            <Icon name="camera-alt" size={30} color="#fff" />
+            <MaterialIcons name="camera-alt" size={30} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
@@ -167,6 +176,8 @@ const handleSave = async () => {
         placeholder="Nome de usuário"
         value={username}
         onChangeText={setUsername}
+        placeholderTextColor={"white"}
+
       />
       <Text style={styles.label}>Bio</Text>
       <TextInput
@@ -174,6 +185,7 @@ const handleSave = async () => {
         placeholder="Consigo jogar das 22h até às 3h da manhã..."
         value={bio}
         onChangeText={setBio}
+        placeholderTextColor={"white"}
       />
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Salvar Alterações</Text>

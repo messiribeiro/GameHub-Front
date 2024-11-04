@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 
@@ -26,7 +27,7 @@ const SignUpStep2 = ({ navigation }: Props) => {
 
   const handleNext = async () => {
     if (password.length < 8) {
-      Alert.alert('Erro', 'Sua senha deve ter, no mínimo, 8 caracteres.');
+      Alert.alert('🔒', 'Sua senha deve ter, no mínimo, 8 caracteres.');
       return;
     }
 
@@ -44,6 +45,8 @@ const SignUpStep2 = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <Text style={styles.title}>Crie uma senha</Text>
       <Text style={styles.subtitle}>Sua senha deve ter, no mínimo, 8 caracteres</Text>
 

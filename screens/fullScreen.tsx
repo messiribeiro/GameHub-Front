@@ -1,9 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import axios, { AxiosError } from 'axios';
-import CommentSection from 'components/CommentSection';
+import CommentSection from '../components/CommentSection';
 import { Video, ResizeMode } from 'expo-av';
 import React, { useEffect, useState, useRef } from 'react';
+import { StatusBar } from 'react-native';
+
 import {
   View,
   StyleSheet,
@@ -16,9 +18,9 @@ import {
   TouchableOpacity,
   PanResponder,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import api from 'services/api';
+import {Feather} from '@expo/vector-icons';
+import {MaterialIcons} from '@expo/vector-icons';
+import api from '../services/api';
 
 import { RootStackParamList } from '../navigation';
 
@@ -134,6 +136,8 @@ const FullScreen = ({ route }: Props) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       {videoUri && (
         <View style={styles.videoContainer}>
           <TouchableWithoutFeedback onPress={togglePlayPause}>
@@ -158,7 +162,7 @@ const FullScreen = ({ route }: Props) => {
               {!isPlaying &&
                 !loading && ( // Não mostrar o ícone de play se o vídeo estiver carregando
                   <View style={styles.playIconContainer}>
-                    <Icon name="play" size={48} color="#fff" />
+                    <Feather name="play" size={48} color="#fff" />
                   </View>
                 )}
             </View>
@@ -194,7 +198,7 @@ const FullScreen = ({ route }: Props) => {
           </View>
           <TouchableOpacity onPress={() => handleCommentButtonClick(Number(postId))}>
             <View style={styles.comments}>
-              <Icon name="message-circle" size={28} color="#fff" />
+              <Feather name="message-circle" size={28} color="#fff" />
               <Text style={styles.text}>{postData.comments}</Text>
             </View>
           </TouchableOpacity>
@@ -252,7 +256,7 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     flexDirection: 'row',
     gap: 5,
-    top: '90%',
+    top: '82%',
   },
   touchableArea: {
     position: 'absolute',
@@ -315,7 +319,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    paddingTop: 60,
+    paddingTop: 180,
     // Adicione qualquer estilo adicional que você queira
   },
   loadingIndicator: {

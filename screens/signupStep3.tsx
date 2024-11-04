@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 import api from '../services/api'; // Importa a instância configurada
@@ -30,7 +31,7 @@ const SignUpStep3 = ({ navigation }: Props) => {
 
   const handleNext = async () => {
     if (!isValidEmail(email)) {
-      Alert.alert('Erro', 'Por favor, insira um email válido.');
+      Alert.alert('🙄', 'insira um email válido.');
       return;
     }
 
@@ -48,6 +49,8 @@ const SignUpStep3 = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <Text style={styles.title}>Informe seu email</Text>
 
       <TextInput

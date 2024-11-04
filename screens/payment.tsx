@@ -4,9 +4,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import * as WebBrowser from 'expo-web-browser';
+import { StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
-import api from 'services/api';
+import api from '../services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'Payment'>;
 
@@ -56,6 +57,8 @@ const Payment = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <Text>Redirecionando para o pagamento...</Text>
     </View>
   );

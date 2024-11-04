@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState, useRef } from 'react';
+import axios from "axios"
 import {
   View,
   Text,
@@ -13,7 +14,8 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import api from 'services/api';
+import api from '../services/api';
+import { StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 
@@ -100,24 +102,32 @@ const GamePreview = ({ navigation, route }: Props) => {
           'Content-Type': 'multipart/form-data',
         },
       });
-
+    
       if (response.status === 201) {
         // Limpar AsyncStorage após a criação do jogo
         await AsyncStorage.removeItem('gameImage');
         await AsyncStorage.removeItem('gameName');
         await AsyncStorage.removeItem('gameCategory');
         await AsyncStorage.removeItem('gameDescription');
-
-        navigation.navigate('Home');
-      } else {
-        Alert.alert('ah não ☹️', 'Não conseguimos cadastrar seu jogo');
+    
+        navigation.navigate('Dashboard', {from: "GamePreview"});
       }
     } catch (error) {
-      console.error(error);
-      Alert.alert('ah não ☹️', 'Não conseguimos cadastrar seu jogo');
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 403) {
+          Alert.alert('ah não ☹️', 'Você atingiu o limite de jogos para seu plano');
+        } else {
+          console.log(error.response)
+          Alert.alert('ah não ☹️', 'Não conseguimos cadastrar seu jogo');
+        }
+      } else {
+        console.error(error);
+        Alert.alert('ah não ☹️', 'Não conseguimos cadastrar seu jogo');
+      }
     } finally {
       closeModal(); // Fecha o modal após a tentativa de publicação
     }
+    
   };
 
   const openModal = () => {
@@ -153,12 +163,14 @@ const GamePreview = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.header} />
       <View style={styles.gamePreview}>
         <Text style={styles.gameName}>{gameName}</Text>
         <View style={styles.imageAndData}>
           <Image
-            source={gameImage ? { uri: gameImage } : require('')}
+            source={gameImage ? { uri: gameImage } : require('../assets/defaultImage.jpg')}
             style={styles.gameImage}
             onError={() => console.error('Erro ao carregar imagem do jogo')}
           />

@@ -3,7 +3,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState, useEffect } from 'react';
-import Verified from 'react-native-vector-icons/MaterialIcons';
+import {MaterialIcons} from '@expo/vector-icons';
+import { StatusBar } from 'react-native';
 
 import {
   StyleSheet,
@@ -16,7 +17,7 @@ import {
   ListRenderItem,
   ActivityIndicator,
 } from 'react-native';
-import api from 'services/api';
+import api from '../services/api';
 
 import { RootStackParamList } from '../navigation';
 
@@ -121,27 +122,35 @@ const FindGamer = ({ navigation, route }: Props) => {
     
       return (
         <View style={styles.gamerData}>
+          <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+    
           <TouchableOpacity
             onPress={() => navigation.navigate('Profile', { profileUserId: String(item.id) })}>
             <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
+    
+            <View style={styles.usernameContainer}>
+              <Text style={styles.username}>{item.username}</Text>
+              {item.Subscription?.isActive && (
+                <MaterialIcons name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
+              )}
+            </View>
           </TouchableOpacity>
-          <View style={styles.usernameContainer}>
-            <Text style={styles.username}>{item.username}</Text>
-            {item.Subscription?.isActive && (  // Verificando se a assinatura é ativa
-              <Verified name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
-            )}
-          </View>
           <View style={styles.bio}>
             <Text style={styles.gamesText}>Jogos</Text>
-            <View style={styles.games}>
-              {item.GameUser.map((gameUser) => (
-                <Image 
-                  key={gameUser.gameId} // Ensure gameId is unique
-                  source={{ uri: gameUser.game.gameimageUrl }} 
-                  style={styles.gameImage} 
+            <FlatList
+              data={item.GameUser}
+              horizontal
+              renderItem={({ item: gameUser }) => (
+                <Image
+                  key={gameUser.gameId}
+                  source={{ uri: gameUser.game.gameimageUrl }}
+                  style={styles.gameImage}
                 />
-              ))}
-            </View>
+              )}
+              keyExtractor={(gameUser) => gameUser.game.id.toString()}
+              showsHorizontalScrollIndicator={false}
+              style={styles.games}
+            />
           </View>
           <TouchableOpacity
             style={styles.invite}
@@ -153,36 +162,44 @@ const FindGamer = ({ navigation, route }: Props) => {
         </View>
       );
     };
-  return (
-    <View style={styles.container}>
-      {loading ? ( // Verifica se está carregando
-        <View style={styles.centeredContainer}>
-          <ActivityIndicator size="large" color="#5312C2" />
-        </View>
-      ) : noUsersMessage ? ( // Verifica se há mensagem de ausência de usuários
-        <View style={styles.centeredContainer}>
-          <Text style={styles.noUsersText}>{noUsersMessage}</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={interestUsers}
-          renderItem={renderUser}
-          keyExtractor={(item) => item.id.toString()}
-          initialScrollIndex={interestUsers.length > 0 ? currentUserIndex : 0}
-          getItemLayout={(data, index) => ({ length: height, offset: height * index, index })}
-          onMomentumScrollEnd={(event) => {
-            const index = Math.floor(event.nativeEvent.contentOffset.y / height);
-            setCurrentUserIndex(index);
-          }}
-          showsVerticalScrollIndicator={false}
-          snapToInterval={height}
-          snapToAlignment="start"
-          decelerationRate="fast"
-          style={{ flex: 1 }}
-        />
-      )}
-    </View>
-  );
+    return (
+      <View style={styles.container}>
+        {loading ? (
+          <View style={styles.centeredContainer}>
+            <ActivityIndicator size="large" color="#5312C2" />
+          </View>
+        ) : noUsersMessage ? (
+          <View style={styles.centeredContainer}>
+            <Text style={styles.noUsersText}>{noUsersMessage}</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={interestUsers}
+            renderItem={renderUser}
+            keyExtractor={(item) => item.id.toString()}
+            initialScrollIndex={interestUsers.length > 0 ? currentUserIndex : 0}
+            getItemLayout={(data, index) => ({ length: height, offset: height * index, index })}
+            onMomentumScrollEnd={(event) => {
+              const index = Math.floor(event.nativeEvent.contentOffset.y / height);
+              setCurrentUserIndex(index);
+            }}
+            showsVerticalScrollIndicator={false}
+            snapToInterval={height}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            style={{ flex: 1 }}
+            onScroll={(event) => {
+              const offsetY = event.nativeEvent.contentOffset.y;
+              const newIndex = Math.round(offsetY / height);
+              // Mover para o índice mais próximo
+              if (currentUserIndex !== newIndex) {
+                setCurrentUserIndex(newIndex);
+              }
+            }}
+          />
+        )}
+      </View>
+    );
 };
 
 const styles = StyleSheet.create({
@@ -242,13 +259,16 @@ const styles = StyleSheet.create({
   },
   games: {
     flexDirection: 'row',
-    gap: 5,
     marginTop: 5,
+    paddingVertical: 5, // Adicione um pouco de preenchimento se necessário
+
   },
   gameImage: {
     width: 40,
     height: 40,
     borderRadius: 5,
+    marginRight: 10,
+
   },
   noUsersText: {
     color: 'white',

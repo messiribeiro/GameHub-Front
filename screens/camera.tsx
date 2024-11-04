@@ -1,7 +1,7 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
-import ImagePreview from 'components/ImagePreview';
-import VideoPreview from 'components/VideoPreview';
+import ImagePreview from '../components/ImagePreview';
+import VideoPreview from '../components/VideoPreview';
 import { CameraView, CameraType, useCameraPermissions, Camera } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 import { Album } from 'expo-media-library';
@@ -17,7 +17,7 @@ import {
   Alert,
   BackHandler,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import { Feather } from '@expo/vector-icons';
 
 import { RootStackParamList } from '../navigation';
 
@@ -222,20 +222,24 @@ const CameraScreen = ({ navigation, route }: Props) => {
             autofocus="on">
             <View style={styles.screenContainer}>
               <View style={styles.changeModeContainer}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setIsVideoMode(false);
-                    console.log('Modo foto ativado');
-                  }}>
-                  <Text style={[styles.text, !isVideoMode && styles.textSelected]}>Foto</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setIsVideoMode(true);
-                    console.log('Modo vídeo ativado');
-                  }}>
-                  <Text style={[styles.text, isVideoMode && styles.textSelected]}>Vídeo</Text>
-                </TouchableOpacity>
+                {!isProfilePicture && (
+                  <>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsVideoMode(false);
+                        console.log('Modo foto ativado');
+                      }}>
+                      <Text style={[styles.text, !isVideoMode && styles.textSelected]}>Foto</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setIsVideoMode(true);
+                        console.log('Modo vídeo ativado');
+                      }}>
+                      <Text style={[styles.text, isVideoMode && styles.textSelected]}>Vídeo</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
@@ -257,7 +261,7 @@ const CameraScreen = ({ navigation, route }: Props) => {
                   {isRecording ? <View style={styles.squareButton} /> : null}
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.toggleFacingButton} onPress={toggleCameraFacing}>
-                  <Icon name="rotate-ccw" size={24} color="#fff" />
+                  <Feather name="rotate-ccw" size={24} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>

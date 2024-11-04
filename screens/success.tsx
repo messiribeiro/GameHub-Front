@@ -2,11 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Button} from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
 
 
 import { RootStackParamList } from '../navigation';
-import api from 'services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'Subscribe'>;
 

@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
+
 import {
   View,
   Text,
@@ -12,7 +14,7 @@ import {
   RefreshControl,
   ActivityIndicator, // Adicione o ActivityIndicator
 } from 'react-native';
-import api from 'services/api'; // Importando a configuração da API
+import api from '../services/api'; // Importando a configuração da API
 
 import { RootStackParamList } from '../navigation';
 
@@ -157,6 +159,8 @@ const Chat = ({ navigation }: Props) => {
                 <TouchableOpacity
                   key={message.id}
                   onPress={() => handleChatPress(otherUserId, message.id, user.username)}>
+                  <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
                   <View style={styles.chat}>
                     <View style={styles.imageContainer}>
                       <Image

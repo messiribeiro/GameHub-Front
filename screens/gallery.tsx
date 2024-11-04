@@ -1,6 +1,8 @@
 import { StackScreenProps } from '@react-navigation/stack';
 import * as MediaLibrary from 'expo-media-library';
 import React, { useState, useEffect } from 'react';
+import { StatusBar } from 'react-native';
+
 import {
   View,
   FlatList,
@@ -11,7 +13,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import {Feather} from '@expo/vector-icons';
 
 import { RootStackParamList } from '../navigation';
 
@@ -92,7 +94,7 @@ const Gallery = ({ navigation, route }: Props) => {
           <Image source={{ uri: item.uri }} style={styles.thumbnail} />
           {/* Mostra o ícone apenas se não for uma imagem de perfil */}
           {!isProfilePicture && (
-            <Icon name={isImage ? 'image' : 'video'} size={24} color="#fff" style={styles.icon} />
+            <Feather name={isImage ? 'image' : 'video'} size={24} color="#fff" style={styles.icon} />
           )}
         </TouchableOpacity>
       </View>
@@ -101,6 +103,8 @@ const Gallery = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <Text style={styles.text}>Imagens da galeria</Text>
       <FlatList
         style={styles.flatList}

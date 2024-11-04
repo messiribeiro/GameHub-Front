@@ -3,8 +3,9 @@ import { StackScreenProps } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api';
+import { Feather } from '@expo/vector-icons';
+import api from '../services/api';
+import { StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 
@@ -60,6 +61,8 @@ const Subscribe = ({ navigation }: Props) => {
 
   return (
     <ScrollView>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>Impulsione Seu Jogo!</Text>
@@ -78,7 +81,7 @@ const Subscribe = ({ navigation }: Props) => {
                 <Text style={styles.text}>GameDev</Text>
                 <Text style={styles.p}>mensal</Text>
               </View>
-              <Icon name="coffee" size={20} color="#fff" />
+              <Feather name="coffee" size={20} color="#fff" />
             </View>
 
             <Text style={styles.price}>R$ 19,90/mês</Text>
@@ -102,7 +105,7 @@ const Subscribe = ({ navigation }: Props) => {
                 <Text style={styles.text}>GameDev</Text>
                 <Text style={styles.p}>mensal</Text>
               </View>
-              <Icon name="coffee" size={20} color="#fff" />
+              <Feather name="coffee" size={20} color="#fff" />
             </View>
 
             <Text style={styles.price}>R$ 5,90/mês</Text>

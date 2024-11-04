@@ -1,12 +1,13 @@
 /* eslint-disable prettier/prettier */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import TabMenu from 'components/TabMenu';
+import TabMenu from '../components/TabMenu';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
-import Verified from 'react-native-vector-icons/MaterialIcons';
-import api from 'services/api';
+import {MaterialIcons} from '@expo/vector-icons';
+import api from '../services/api';
+import { StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 
@@ -77,7 +78,7 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
   }, []);
 
   const handleEditProfile = () => {
-    navigation.navigate('EditProfile');
+    navigation.navigate('EditProfile', {profilePictureUri: null});
   };
 
   const handleRefresh = () => {
@@ -88,6 +89,8 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
+                <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
         <ActivityIndicator size="large" color="#FFFFFF" />
       </View>
     );
@@ -115,6 +118,8 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.banner}>
         <Image source={{ uri: "https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png" }} style={styles.bannerImage} />
       </View>
@@ -124,7 +129,7 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
             {userData?.Subscription?.isActive && (
-              <Verified name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
+              <MaterialIcons name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
             )}
           </View>
         </View>
@@ -159,9 +164,9 @@ const MyProfile: React.FC<Props> = ({ navigation }) => {
       />
       
       {posts.length === 0 && (
-        <View style={styles.posts}>
-          <Text style={styles.messageText}>@{userData ? userData.username : "..."} ainda não fez uma publicação</Text>
-        </View>
+        <View style={styles.noPostsContainer}>
+        <Text style={styles.noPostsText}>Você ainda não fez uma publicação 😐</Text>
+      </View>
       )}
 
       <TabMenu navigation={navigation} />
@@ -262,7 +267,7 @@ const styles = StyleSheet.create({
   },
   // Styles for posts
   post: {
-    width: '33.33%',
+    width: '31%',
     margin: 5,
     aspectRatio: 1,
   },
@@ -285,7 +290,19 @@ const styles = StyleSheet.create({
   flatList: {
     top: -8,
 
-  }
+  },
+  noPostsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  noPostsText: {
+    color: 'white',
+    fontSize: 14,
+    opacity: 0.4,
+    top: -230
+  },
 });
 
 export default MyProfile;

@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
-import axios from 'axios';
 import { Video, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import React, { useState, useRef, useEffect } from 'react';
+import { StatusBar } from 'react-native';
+
 import {
   View,
   StyleSheet,
@@ -15,8 +16,9 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api';
+import {Feather} from '@expo/vector-icons';
+
+import api from '../services/api';
 
 import GoBackAlert from '../components/GoBackAlert';
 import { RootStackParamList } from '../navigation';
@@ -198,13 +200,15 @@ const EditPostInfo = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <ScrollView
         contentContainerStyle={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Icon style={styles.arrowLeft} name="arrow-left" size={24} color="#fff" />
+            <Feather style={styles.arrowLeft} name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.title}>
             {isVideo ? 'Verifique seu Vídeo' : 'Verifique sua Imagem'}
@@ -252,7 +256,7 @@ const EditPostInfo = ({ navigation, route }: Props) => {
         </View>
         <TouchableOpacity style={styles.button} onPress={handleSubmitPost} disabled={isSubmitting}>
           <Text style={styles.text}>{isSubmitting ? 'Enviando...' : 'Avançar'}</Text>
-          <Icon name="arrow-right" size={24} color="#fff" />
+          <Feather name="arrow-right" size={24} color="#fff" />
         </TouchableOpacity>
 
         <GoBackAlert

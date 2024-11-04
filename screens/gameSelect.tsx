@@ -3,7 +3,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
-import Icon from "react-native-vector-icons/Feather";
+import {Feather} from "@expo/vector-icons";
+import { StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 import api from '../services/api';
@@ -63,25 +64,33 @@ const GameSelect = ({ navigation }: Props) => {
 
       if (response.status === 201) {
         const newUserId = response.data.data.id; 
+        
+        await AsyncStorage.removeItem("username")
+        await AsyncStorage.removeItem("email")
+        await AsyncStorage.removeItem("password")
+
         await AsyncStorage.setItem("userId", String(newUserId));
         navigation.navigate('Home');
       } else {
-        Alert.alert('Erro', 'Não foi possível criar o usuário.');
+        Alert.alert('vish 😥 ', 'Algo deu errado');
+
       }
     } catch (error) {
       console.error('API Error:', error);
-      Alert.alert('Erro', 'Erro ao processar sua solicitação.');
+      Alert.alert('vish 😥 ', 'Algo deu errado');
     }
   };
 
   return (
     <View style={styles.container}>
+              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <Text style={styles.title}>Quais jogos você joga?</Text>
 
       <View style={styles.gamesSection}>
         {/* Barra de Pesquisa */}
         <View style={styles.searchContainer}>
-          <Icon name="search" size={24} color="#fff" style={styles.icon} />
+          <Feather name="search" size={24} color="#fff" style={styles.icon} />
           <TextInput
             style={styles.searchBar}
             placeholder="Pesquisar"

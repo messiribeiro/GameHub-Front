@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import TabMenu from 'components/TabMenu';
+import TabMenu from '../components/TabMenu';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
+
 import {
   StyleSheet,
   Text,
@@ -13,9 +15,9 @@ import {
   Animated,
   FlatList,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import Verified from 'react-native-vector-icons/MaterialIcons';
-import api from 'services/api';
+import {Feather} from '@expo/vector-icons';
+import {MaterialIcons} from '@expo/vector-icons';
+import api from '../services/api';
 
 import { RootStackParamList } from '../navigation';
 
@@ -151,6 +153,8 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
+                <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
         <ActivityIndicator size="large" color="#5312C2" />
       </View>
     );
@@ -158,6 +162,8 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+
       <View style={styles.banner}>
         <Image
           source={{
@@ -172,7 +178,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
             {userData?.Subscription?.isActive && (
-              <Verified name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
+              <MaterialIcons name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
             )}
           </View>
         </View>
@@ -195,7 +201,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
                   });
                 }
               }}>
-              <Icon name="mail" size={24} color="#fff" />
+              <Feather name="mail" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
@@ -212,6 +218,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         </View>
       </View>
       <View style={styles.line} />
+      {posts.length > 0 ? (
       <FlatList
         data={posts}
         renderItem={renderPost}
@@ -222,6 +229,11 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
         refreshing={refreshing}
         onRefresh={handleRefresh}
       />
+    ) : (
+      <View style={styles.noPostsContainer}>
+        <Text style={styles.noPostsText}>@{userData?.username} não tem nenhuma publicação</Text>
+      </View>
+    )}
       <TabMenu navigation={navigation} />
     </View>
   );
@@ -305,7 +317,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   post: {
-    width: '33.33%', // Ajusta a largura do post para 1/3 da tela
+    width: '31%', // Ajusta a largura do post para 1/3 da tela
     margin: 5, // Mantém uma margem ao redor do post
     aspectRatio: 1, // Mantém a proporção de aspecto quadrado
   },
@@ -327,6 +339,7 @@ const styles = StyleSheet.create({
   },
   posts: {
     paddingBottom: 20,
+    
   },
   usernameContainer: {
     flexDirection: 'row',
@@ -337,6 +350,19 @@ const styles = StyleSheet.create({
   },
   verifiedIcon: {
     top: 1,
+  },
+
+  noPostsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  noPostsText: {
+    color: 'white',
+    fontSize: 14,
+    opacity: 0.4,
+    top: -100
   },
 });
 
