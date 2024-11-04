@@ -1,5 +1,5 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CameraScreen from 'screens/camera';
 import Chat from 'screens/chat';
@@ -51,7 +51,7 @@ export type RootStackParamList = {
   FullScreen: { postId: string };
   EditProfile: { profilePictureUri: string };
   Subscribe: undefined;
-  GameRegister: { imageUri?: string };
+  GameRegister: { imageUri?: string | null };
   GameImageSelect: undefined;
   GamePreview: undefined;
   Dashboard: undefined;
@@ -60,6 +60,14 @@ export type RootStackParamList = {
 
 // Criando o Stack Navigator
 const Stack = createStackNavigator<RootStackParamList>();
+
+const MyTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    background: '#1B1B1E',
+  },
+};
 
 // Adicione o tipo para o linking
 type RootStackProps = {
@@ -76,7 +84,7 @@ type RootStackProps = {
 
 export default function RootStack({ linking }: RootStackProps) {
   return (
-    <NavigationContainer linking={linking}>
+    <NavigationContainer linking={linking} theme={MyTheme}>
       <Stack.Navigator initialRouteName="Login">
         <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
         <Stack.Screen name="SignupStep1" component={SignupStep1} options={{ headerShown: false }} />

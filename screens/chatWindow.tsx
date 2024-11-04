@@ -57,16 +57,13 @@ const ChatWindow = ({ navigation, route }: Props) => {
       if (userId) {
         try {
           const response = await api.get(`api/chat/messages/${userId}/${receiverId}`);
-          console.log("testando");
 
           // Atualiza o estado com as mensagens retornadas
           setOldMessages(response.data.messages);
           setLoading(false); // Define como carregado
 
           // Exibe as mensagens no console
-          response.data.messages.forEach((message: Message) => {
-            console.log(message);
-          });
+          
 
           setTimeout(() => {
           scrollToBottom();
@@ -332,8 +329,8 @@ const styles = StyleSheet.create({
     right: -8,
   },
   inputContainer: {
-    width: '60%',
-    minHeight: 35,
+    width: '70%',
+    minHeight: 45,
     maxHeight: 80,
     alignItems: 'center',
     flexDirection: 'row',
@@ -351,8 +348,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     backgroundColor: '#D4E5FF',
-    width: 37,
-    height: 37,
+    width: 45,
+    height: 45,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,
@@ -365,8 +362,8 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     backgroundColor: '#D4E5FF',
-    width: 37,
-    height: 37,
+    width: 45,
+    height: 45,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 14,

@@ -1,70 +1,82 @@
-/* eslint-disable prettier/prettier */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
-
-import { RootStackParamList } from '../navigation';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import api from 'services/api';
 
-// Defining the type of props
+import { RootStackParamList } from '../navigation';
+
+// Definindo o tipo das props
 type Props = StackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen = ({ navigation }: Props) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(true); // Estado de carregamento
 
   useEffect(() => {
     const checkLoginStatus = async () => {
       const userId = await AsyncStorage.getItem('userId');
       if (userId) {
         navigation.replace('Home');
+      } else {
+        setLoading(false); // Define o loading como false se não houver usuário
       }
     };
-    
+
     checkLoginStatus();
   }, [navigation]);
 
+  const handleLogin = async () => {
+    if (!username || !password) {
+      Alert.alert('Error', 'Please enter both username and password');
+      return; // Para se o nome de usuário ou a senha estiverem vazios
+    }
 
- const handleLogin = async () => {
-   if (!username || !password) {
-     Alert.alert('Error', 'Please enter both username and password');
-     return; // Stop if username or password is empty
-   }
+    try {
+      const response = await api.post('/api/auth/login', {
+        email: username,
+        password,
+      });
 
-   try {
-     const response = await api.post('https://gamehub-back-6h0k.onrender.com/api/auth/login', {
-       email: username,
-       password,
-     });
+      // Valida a estrutura da resposta
+      if (response.data && response.data.success && response.data.data && response.data.data.user) {
+        const user = response.data.data.user;
+        const userId = user.id.toString(); // Converte userId para string para AsyncStorage
+        const token = response.data.data.token;
 
-     // Validate response structure
-     if (response.data && response.data.success && response.data.data && response.data.data.user) {
-       const user = response.data.data.user;
-       const userId = user.id.toString(); // Convert userId to string for AsyncStorage
-       const token = response.data.data.token;
+        // Salva tanto userId quanto token no AsyncStorage
+        await AsyncStorage.setItem('userId', userId);
+        await AsyncStorage.setItem('authToken', token);
 
-       // Save both userId and token in AsyncStorage
-       await AsyncStorage.setItem('userId', userId);
-       await AsyncStorage.setItem('authToken', token);
+        console.log('User ID and Token saved:', userId, token);
 
-       console.log('User ID and Token saved:', userId, token);
+        // Navega para a tela Home
+        navigation.replace('Home');
+      } else {
+        console.error('Invalid login response:', response.data);
+        Alert.alert('Login Failed', 'Invalid username or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Login Failed', 'An error occurred during login. Please try again.');
+    }
+  };
 
-       // Navigate to Home screen
-       navigation.replace('Home');
-     } else {
-       console.error('Invalid login response:', response.data);
-       Alert.alert('Login Failed', 'Invalid username or password');
-     }
-   } catch (error) {
-     console.error('Login error:', error);
-     Alert.alert('Login Failed', 'An error occurred during login. Please try again.');
-   }
- };
-
-
-
+  // Se ainda estiver carregando, exibe um indicador de carregamento
+  if (loading) {
+    return <View style={styles.loadingContainer} />;
+  }
 
   return (
     <View style={styles.container}>
@@ -89,8 +101,7 @@ const LoginScreen = ({ navigation }: Props) => {
 
       <TouchableOpacity
         style={styles.forgotPassword}
-        onPress={() => Alert.alert('Forgot Password', 'Implement password recovery logic here.')}
-      >
+        onPress={() => Alert.alert('Forgot Password', 'Implement password recovery logic here.')}>
         <Text style={styles.forgotPasswordText}>Forgot Password</Text>
       </TouchableOpacity>
 
@@ -100,7 +111,7 @@ const LoginScreen = ({ navigation }: Props) => {
 
       <TouchableOpacity
         style={styles.createAccount}
-        onPress={() => navigation.navigate('SignupStep1')} // Navigate to SignupStep1
+        onPress={() => navigation.navigate('SignupStep1')} // Navega para SignupStep1
       >
         <Text style={styles.createAccountText}>Create Account</Text>
       </TouchableOpacity>
@@ -159,6 +170,13 @@ const styles = StyleSheet.create({
   },
   createAccountText: {
     color: '#fff',
+  },
+
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#121212',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

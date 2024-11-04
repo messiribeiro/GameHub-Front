@@ -1,7 +1,7 @@
+import { Feather } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
 
 type Props = {
   navigation: StackNavigationProp<any>;
@@ -11,11 +11,11 @@ const TabMenu: React.FC<Props> = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity>
-        <Icon name="compass" size={26} color="#000000" />
+        <Feather name="compass" size={26} color="#000000" />
       </TouchableOpacity>
 
       <TouchableOpacity>
-        <Icon
+        <Feather
           name="plus-circle"
           onPress={() => navigation.navigate('Camera')}
           size={26}
@@ -24,7 +24,7 @@ const TabMenu: React.FC<Props> = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Chat')}>
-        <Icon name="mail" size={26} color="#000000" />
+        <Feather name="mail" size={26} color="#000000" />
       </TouchableOpacity>
     </View>
   );

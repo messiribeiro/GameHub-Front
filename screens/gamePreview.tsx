@@ -102,6 +102,12 @@ const GamePreview = ({ navigation, route }: Props) => {
       });
 
       if (response.status === 201) {
+        // Limpar AsyncStorage após a criação do jogo
+        await AsyncStorage.removeItem('gameImage');
+        await AsyncStorage.removeItem('gameName');
+        await AsyncStorage.removeItem('gameCategory');
+        await AsyncStorage.removeItem('gameDescription');
+
         navigation.navigate('Home');
       } else {
         Alert.alert('ah não ☹️', 'Não conseguimos cadastrar seu jogo');

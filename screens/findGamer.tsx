@@ -113,43 +113,46 @@ const FindGamer = ({ navigation, route }: Props) => {
   const defaultImageUrl =
     'https://www.shutterstock.com/image-vector/profile-default-avatar-icon-user-600nw-2463844171.jpg';
 
-  const renderUser: ListRenderItem<User> = ({ item }) => {
-    const profileImageUrl =
-      item.profilePictureUrl === 'https://example.com/profile-picture.jpg'
-        ? defaultImageUrl
-        : item.profilePictureUrl;
-
-    return (
-      <View style={styles.gamerData}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Profile', { profileUserId: String(item.id) })}>
-          <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
-        </TouchableOpacity>
-        <View style={styles.usernameContainer}>
-          <Text style={styles.username}>{item.username}</Text>
-          {item.Subscription?.isActive && (  // Verificando se a assinatura é ativa
-            <Verified name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
-          )}
-        </View>
-        <View style={styles.bio}>
-          <Text style={styles.gamesText}>Jogos</Text>
+    const renderUser: ListRenderItem<User> = ({ item }) => {
+      const profileImageUrl =
+        item.profilePictureUrl === 'https://example.com/profile-picture.jpg'
+          ? defaultImageUrl
+          : item.profilePictureUrl;
+    
+      return (
+        <View style={styles.gamerData}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Profile', { profileUserId: String(item.id) })}>
+            <Image source={{ uri: profileImageUrl }} style={styles.userImage} />
+          </TouchableOpacity>
+          <View style={styles.usernameContainer}>
+            <Text style={styles.username}>{item.username}</Text>
+            {item.Subscription?.isActive && (  // Verificando se a assinatura é ativa
+              <Verified name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
+            )}
+          </View>
+          <View style={styles.bio}>
+            <Text style={styles.gamesText}>Jogos</Text>
             <View style={styles.games}>
               {item.GameUser.map((gameUser) => (
-                <Image key={gameUser.gameId} source={{ uri: gameUser.game.gameimageUrl }} style={styles.gameImage} />
+                <Image 
+                  key={gameUser.gameId} // Ensure gameId is unique
+                  source={{ uri: gameUser.game.gameimageUrl }} 
+                  style={styles.gameImage} 
+                />
               ))}
             </View>
+          </View>
+          <TouchableOpacity
+            style={styles.invite}
+            onPress={() => {
+              navigation.navigate('ChatWindow', { receiverId: item.id, receiverName: item.username });
+            }}>
+            <Text style={styles.inviteText}>Convidar</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          style={styles.invite}
-          onPress={() => {
-            navigation.navigate('ChatWindow', { receiverId: item.id, receiverName: item.username });
-          }}>
-          <Text style={styles.inviteText}>Convidar</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  };
-
+      );
+    };
   return (
     <View style={styles.container}>
       {loading ? ( // Verifica se está carregando
@@ -261,7 +264,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   verifiedIcon: {
-    top: 1,
+    top: 2,
   },
 });
 

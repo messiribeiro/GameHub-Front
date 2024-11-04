@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native';
+import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -13,6 +13,8 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import api from 'services/api';
 
+import { RootStackParamList } from '../navigation';
+
 interface Game {
   id: number;
   name: string;
@@ -21,8 +23,9 @@ interface Game {
   gameimageUrl: string | null;
 }
 
-const Dashboard = () => {
-  const navigation = useNavigation();
+type Props = StackScreenProps<RootStackParamList, 'Dashboard'>;
+
+const Dashboard = ({ navigation }: Props) => {
   const [userGames, setUserGames] = useState<Game[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +60,7 @@ const Dashboard = () => {
   };
 
   const handleGameregister = () => {
-    navigation.navigate('GameRegister');
+    navigation.navigate('GameRegister', { imageUri: null });
   };
 
   if (loading) {
@@ -88,7 +91,7 @@ const Dashboard = () => {
 
       {userGames.length > 0 ? (
         <FlatList
-          data={userGames}
+          data={userGames.slice().reverse()}
           style={styles.flatList}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (

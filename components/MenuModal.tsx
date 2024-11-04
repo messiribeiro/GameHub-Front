@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import {
@@ -8,31 +9,50 @@ import {
   Animated,
   Dimensions,
   Image,
+  BackHandler,
+  PanResponder, // Importar PanResponder
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api';
 
 interface MenuProps {
   visible: boolean;
   onClose: () => void;
   navigation: any;
+  userData: any;
+  userStats: any;
 }
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
-const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
+const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation, userData, userStats }) => {
   const slideAnim = React.useRef(new Animated.Value(-screenWidth)).current;
 
-  const [userStats, setUserStats] = useState<{
-    followersCount: number;
-    followingCount: number;
-  } | null>(null);
-  const [userData, setUserData] = useState<{
-    profilePictureUrl: string;
-    username: string;
-    Subscription?: { isActive: boolean };
-  } | null>(null);
+  const panResponder = React.useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderRelease: (evt, gestureState) => {
+        // Detectar movimento de deslizar para a esquerda
+        if (gestureState.dx < -10) {
+          // Alterar o valor para ajustar a sensibilidade
+          onClose(); // Fecha o menu
+        }
+      },
+    })
+  ).current;
+
+  useEffect(() => {
+    const backAction = () => {
+      if (visible) {
+        onClose(); // Fecha o menu se estiver visível
+        return true; // Impede que o aplicativo feche
+      }
+      return false; // Permite que o comportamento padrão ocorra se o menu não estiver visível
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+
+    return () => backHandler.remove(); // Limpa o listener ao desmontar
+  }, [visible, onClose]);
 
   useEffect(() => {
     if (visible) {
@@ -41,8 +61,6 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
         duration: 100,
         useNativeDriver: true,
       }).start();
-      fetchUserStats();
-      fetchUserData();
     } else {
       Animated.timing(slideAnim, {
         toValue: -screenWidth,
@@ -51,26 +69,6 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
       }).start();
     }
   }, [visible, slideAnim]);
-
-  const fetchUserStats = async () => {
-    try {
-      const profileUserId = await AsyncStorage.getItem('userId');
-      const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
-      setUserStats(statsResponse.data);
-    } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
-    }
-  };
-
-  const fetchUserData = async () => {
-    try {
-      const profileUserId = await AsyncStorage.getItem('userId');
-      const userResponse = await api.get(`api/users/${profileUserId}`);
-      setUserData(userResponse.data);
-    } catch (error) {
-      console.error('Erro ao buscar dados do usuário:', error);
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -85,7 +83,9 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
   const isPremium = userData?.Subscription?.isActive;
 
   return (
-    <Animated.View style={[styles.menu, { transform: [{ translateX: slideAnim }] }]}>
+    <Animated.View
+      {...panResponder.panHandlers} // Adicionar panHandlers aqui
+      style={[styles.menu, { transform: [{ translateX: slideAnim }] }]}>
       <TouchableOpacity
         onPress={() => {
           navigation.navigate('MyProfile');
@@ -120,18 +120,14 @@ const MenuModal: React.FC<MenuProps> = ({ visible, onClose, navigation }) => {
             navigation.navigate(isPremium ? 'Dashboard' : 'Subscribe');
           }}
           style={styles.gameDev}>
-          <Icon name="code" size={20} color="#fff" />
+          <Feather name="code" size={20} color="#fff" />
           <Text style={styles.text}>{isPremium ? 'Dashboard' : 'GameDev'}</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.pagesAndLogoutContainer}>
-        {/* <View style={styles.settingsView}>
-          <Icon name="settings" size={20} color="#fff" />
-          <Text style={styles.text}>Configurações</Text>
-        </View> */}
         <TouchableOpacity style={styles.logoutView} onPress={handleLogout}>
-          <Icon name="log-out" size={20} color="#fff" />
+          <Feather name="log-out" size={20} color="#fff" />
           <Text style={styles.text}>Sair</Text>
         </TouchableOpacity>
       </View>
@@ -221,11 +217,6 @@ const styles = StyleSheet.create({
   pagesAndLogoutContainer: {
     marginTop: '30%',
     gap: 15,
-  },
-  settingsView: {
-    flexDirection: 'row',
-    gap: 5,
-    alignItems: 'center',
   },
   logoutView: {
     flexDirection: 'row',

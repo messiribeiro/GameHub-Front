@@ -22,7 +22,7 @@ import {
   TouchableWithoutFeedback,
   BackHandler,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
+import { Icon } from 'react-native-elements';
 import api from 'services/api';
 
 import { RootStackParamList } from '../navigation';
@@ -57,23 +57,20 @@ const Home = ({ navigation }: Props) => {
   const inputRef = useRef<TextInput | null>(null);
   const uniquePosts = [...new Map(posts.map((post) => [post.id, post])).values()];
 
+  const [userData, setUserData] = useState<{
+    profilePictureUrl: string;
+    username: string;
+    Subscription?: { isActive: boolean };
+  } | null>(null);
+
+  const [userStats, setUserStats] = useState<{
+    followersCount: number;
+    followingCount: number;
+  } | null>(null);
+
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
-
-  useEffect(() => {
-    const backAction = () => {
-      if (menuVisible) {
-        closeMenu();
-        return true; // Impede o fechamento do aplicativo
-      }
-      return false; // Permite o fechamento do aplicativo
-    };
-
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-
-    return () => backHandler.remove(); // Limpeza do listener
-  }, [menuVisible]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -120,6 +117,7 @@ const Home = ({ navigation }: Props) => {
     try {
       const response = await api.get(`/api/users/${userId}`);
       setUserGames(response.data.GameUser.map((gameUser: any) => gameUser.game));
+      setUserData(response.data);
     } catch (error) {
       console.error('Erro ao buscar jogos do usuário:', error);
     }
@@ -134,11 +132,22 @@ const Home = ({ navigation }: Props) => {
     }
   };
 
+  const fetchUserStats = async () => {
+    try {
+      const profileUserId = await AsyncStorage.getItem('userId');
+      const statsResponse = await api.get(`api/friendships/stats/${profileUserId}`);
+      setUserStats(statsResponse.data);
+    } catch (error) {
+      console.error('Erro ao buscar dados do usuário:', error);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (userId) {
         await fetchUserGames();
         await fetchAllGames();
+        await fetchUserStats();
         setLoading(false);
       }
     };
@@ -212,6 +221,8 @@ const Home = ({ navigation }: Props) => {
         navigation={navigation}
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
+        userData={userData}
+        userStats={userStats}
       />
 
       <FlatList
@@ -258,7 +269,7 @@ const Home = ({ navigation }: Props) => {
               ) : (
                 <TouchableOpacity style={styles.searchBar} onPress={handleSearchIconPress}>
                   <Text style={styles.searchTitle}>O que você quer jogar hoje?</Text>
-                  <Icon name="search" size={20} color="#fff" />
+                  <Icon name="search" type="feather" size={20} color="#fff" />
                 </TouchableOpacity>
               )}
             </View>
@@ -268,6 +279,7 @@ const Home = ({ navigation }: Props) => {
                   horizontal
                   data={filteredGames}
                   keyExtractor={(item) => item.id.toString()}
+                  refreshing={refreshing}
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       onPress={() => handleImagePress(item.id)}
@@ -309,7 +321,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-    paddingBottom: 40,
   },
   loadingContainer: {
     flex: 1,

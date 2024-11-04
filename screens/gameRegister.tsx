@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  BackHandler,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -24,6 +25,29 @@ const GameRegister = ({ navigation, route }: Props) => {
   const [gameDescription, setGameDescription] = useState<string>('');
   const [gameCategory, setGameCategory] = useState<string>(selectedValue);
   const [gameImage, setGameImage] = useState<string | null>(null);
+
+  // Função para limpar os dados do AsyncStorage
+  const clearAsyncStorageData = async () => {
+    await AsyncStorage.removeItem('gameName');
+    await AsyncStorage.removeItem('gameDescription');
+    await AsyncStorage.removeItem('gameCategory');
+    await AsyncStorage.removeItem('gameImage');
+  };
+
+  // Handler para o BackHandler
+  const handleBackPress = () => {
+    clearAsyncStorageData(); // Limpa os dados
+    navigation.goBack(); // Retorna à tela anterior
+    return true; // Impede a ação padrão
+  };
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+    return () => {
+      backHandler.remove(); // Remove o listener quando o componente é desmontado
+    };
+  }, []);
 
   async function handleGallery() {
     await AsyncStorage.setItem('gameName', gameName);
@@ -110,6 +134,7 @@ const GameRegister = ({ navigation, route }: Props) => {
               setSelectedValue(itemValue);
               setGameCategory(itemValue);
             }}>
+            {/* Opções do Picker */}
             <Picker.Item label="Ação" value="Ação" />
             <Picker.Item label="Aventura" value="Aventura" />
             <Picker.Item label="RPG" value="RPG" />
@@ -169,7 +194,6 @@ const GameRegister = ({ navigation, route }: Props) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

@@ -171,15 +171,11 @@ const EditPostInfo = ({ navigation, route }: Props) => {
 
     try {
       setIsSubmitting(true);
-      const response = await axios.post(
-        'https://gamehub-back-6h0k.onrender.com/api/post/',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      );
+      const response = await api.post('/api/post/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
       console.log('Post criado com sucesso:', response.data);
       setPostSubmitted(true); // Define postSubmitted como true

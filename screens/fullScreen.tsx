@@ -129,7 +129,7 @@ const FullScreen = ({ route }: Props) => {
   ).current;
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#fff" />;
+    return <ActivityIndicator style={styles.loadingIndicator} size="large" color="#fff" />;
   }
 
   return (
@@ -147,11 +147,20 @@ const FullScreen = ({ route }: Props) => {
                 isLooping
                 onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
               />
-              {!isPlaying && (
-                <View style={styles.playIconContainer}>
-                  <Icon name="play" size={48} color="#fff" />
-                </View>
+              {/* Exibir o ícone de carregamento enquanto o vídeo estiver carregando */}
+              {loading && (
+                <ActivityIndicator
+                  size="large"
+                  color="#fff"
+                  style={styles.loadingIndicator} // Adicione uma estilização para o carregador
+                />
               )}
+              {!isPlaying &&
+                !loading && ( // Não mostrar o ícone de play se o vídeo estiver carregando
+                  <View style={styles.playIconContainer}>
+                    <Icon name="play" size={48} color="#fff" />
+                  </View>
+                )}
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -308,6 +317,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     paddingTop: 60,
     // Adicione qualquer estilo adicional que você queira
+  },
+  loadingIndicator: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -25 }, { translateY: -25 }],
   },
 });
 

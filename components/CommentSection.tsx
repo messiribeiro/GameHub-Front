@@ -1,8 +1,9 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
-import { View, Text, TextInput, StyleSheet, FlatList, Image } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import api from 'services/api'; // Importa seu serviço de API
+import { View, Text, TextInput, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import { PanGestureHandler, GestureHandlerRootView } from 'react-native-gesture-handler';
+import api from 'services/api';
 
 interface Comment {
   id: number;
@@ -52,7 +53,8 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
   const fetchComments = async () => {
     try {
       const response = await api.get(`api/post/${postId}/details`);
-      setComments(response.data.comments);
+      // Inverte a ordem dos comentários para que os mais recentes apareçam primeiro
+      setComments(response.data.comments.reverse());
     } catch (error) {
       console.error('Erro ao buscar comentários:', error);
     }
@@ -70,13 +72,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
           content: newComment,
         });
         setNewComment('');
+        // Rebusca os comentários após adicionar um novo
         fetchComments();
       } catch (error) {
         console.error('Erro ao adicionar comentário:', error);
       }
     }
   };
-
   const formatDate = (dateString: string): string => {
     const now = new Date();
     const commentDate = new Date(dateString);
@@ -90,60 +92,79 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId, onClose }) => {
     else return `há ${Math.floor(diffInSeconds / 31536000)} ano`;
   };
 
+  const handleGestureEvent = (event: any) => {
+    if (event.nativeEvent.translationY > 100) {
+      // Ajuste o valor de 100 conforme necessário
+      onClose(); // Fecha o componente se o gesto for detectado
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.commentsCounterText}>{comments.length} comentários</Text>
-      <FlatList
-        style={styles.commentsContainer}
-        data={comments}
-        keyExtractor={(item, index) => `${item.content}-${index}`}
-        renderItem={({ item }) => (
-          <View style={styles.comment}>
-            <View style={styles.photoAndContent}>
-              <Image
-                source={{ uri: item.user.profilePictureUrl || 'https://via.placeholder.com/45' }}
-                style={styles.userImage}
-              />
-              <View style={styles.textContent}>
-                <View style={styles.usernameAndTime}>
-                  <Text style={styles.text}>{item.user.username}</Text>
-                  <Text style={styles.timeText}>{formatDate(item.createdAt)}</Text>
+    <GestureHandlerRootView style={styles.container}>
+      <PanGestureHandler onGestureEvent={handleGestureEvent}>
+        <View style={styles.container}>
+          <Text style={styles.commentsCounterText}>
+            {comments.length} {comments.length === 1 ? 'comentário' : 'comentários'}
+          </Text>
+          <FlatList
+            style={styles.commentsContainer}
+            data={comments}
+            keyExtractor={(item) => `${item.id}-${item.createdAt}`} // Combining id with createdAt to ensure uniqueness
+            renderItem={({ item }) => (
+              <View style={styles.comment}>
+                <View style={styles.photoAndContent}>
+                  <Image
+                    source={{
+                      uri: item.user.profilePictureUrl || 'https://via.placeholder.com/45',
+                    }}
+                    style={styles.userImage}
+                  />
+                  <View style={styles.textContent}>
+                    <View style={styles.usernameAndTime}>
+                      <Text style={styles.text}>{item.user.username}</Text>
+                      <Text style={styles.timeText}>{formatDate(item.createdAt)}</Text>
+                    </View>
+                    <Text style={styles.commentText}>{item.content}</Text>
+                  </View>
                 </View>
-                <Text style={styles.commentText}>{item.content}</Text>
               </View>
+            )}
+          />
+
+          <View style={styles.inputContainer}>
+            <View style={styles.inputAndImage}>
+              <Image
+                source={{
+                  uri:
+                    userDetails?.profilePictureUrl ||
+                    'https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png',
+                }}
+                style={styles.myPhoto}
+              />
+              <TextInput
+                style={styles.input}
+                placeholderTextColor="white"
+                placeholder="Adicione um comentário"
+                value={newComment}
+                onChangeText={setNewComment}
+                onSubmitEditing={handleAddComment}
+              />
+              <TouchableOpacity style={styles.sendIcon} onPress={handleAddComment}>
+                <Feather name="arrow-right" size={20} />
+              </TouchableOpacity>
             </View>
           </View>
-        )}
-      />
-
-      <View style={styles.inputContainer}>
-        <View style={styles.inputAndImage}>
-          <Image
-            source={{
-              uri:
-                userDetails?.profilePictureUrl ||
-                'https://i.pinimg.com/originals/97/fd/40/97fd40b04ea88ae05c66332c64de4fa9.png',
-            }}
-            style={styles.myPhoto}
-          />
-          <TextInput
-            style={styles.input}
-            placeholderTextColor="white"
-            placeholder="Adicione um comentário"
-            value={newComment}
-            onChangeText={setNewComment}
-            onSubmitEditing={handleAddComment}
-          />
         </View>
-      </View>
-    </View>
+      </PanGestureHandler>
+    </GestureHandlerRootView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#2B2B2C',
-    padding: 20,
+    padding: 5,
   },
   commentsCounterText: {
     alignSelf: 'center',
@@ -151,12 +172,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: 'white',
   },
-
   comment: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 30,
+    marginBottom: 20,
   },
   photoAndContent: {
     flexDirection: 'row',
@@ -167,14 +187,14 @@ const styles = StyleSheet.create({
     height: 45,
     borderRadius: 50,
   },
-  textContent: {},
-
+  textContent: {
+    width: '80%',
+  },
   commentsContainer: {
     backgroundColor: '#2B2B2C',
     width: '100%',
-    marginTop: 30,
+    marginTop: 20,
   },
-
   usernameAndTime: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -194,22 +214,26 @@ const styles = StyleSheet.create({
   inputContainer: {
     position: 'absolute',
     bottom: 10,
-    left: '11%',
+    width: '100%',
+    alignSelf: 'center',
+    right: 4,
   },
   input: {
     height: 40,
-    width: '80%',
     color: 'white',
-    paddingLeft: 10,
+    paddingHorizontal: 10,
+
     alignSelf: 'center',
+    flex: 1,
   },
   inputAndImage: {
-    width: '90%',
+    width: '80%',
     height: 40,
     backgroundColor: '#727272',
     alignSelf: 'center',
     borderRadius: 20,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   myPhoto: {
     width: 40,
@@ -217,6 +241,14 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   likeButton: {},
+  sendIcon: {
+    backgroundColor: '#D4E5FF',
+    height: '100%',
+    width: 40,
+    borderRadius: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });
 
 export default CommentSection;

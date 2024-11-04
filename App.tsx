@@ -1,6 +1,5 @@
 import 'react-native-gesture-handler';
 import { StripeProvider } from '@stripe/stripe-react-native';
-import * as Linking from 'expo-linking';
 import React from 'react';
 
 import RootStack from './navigation';
@@ -17,6 +16,8 @@ const linking = {
 };
 
 export default function App() {
+  // Carregar a fonte Feather.ttf do seu assets/fonts
+
   return (
     <StripeProvider publishableKey="pk_test_51QD4evICxiZsBAXRfhZhiSLdpcHqby4tkqgynnxCxwzD7pfls8lyryVhJ6JiaP9Q2YkHfwm9sFCAv30c78KVjCU3005bCNvxmv">
       <RootStack linking={linking} />

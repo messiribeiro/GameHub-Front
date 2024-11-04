@@ -1,12 +1,11 @@
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, differenceInSeconds } from 'date-fns';
 import { pt } from 'date-fns/locale/pt';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, Animated, Easing } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import api from 'services/api';
 
 interface Post {
@@ -35,7 +34,7 @@ interface PostFeedProps {
 const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonClick }) => {
   const [user, setUser] = useState<UserData | null>(null);
   const [mediaError, setMediaError] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [activeVideo, setActiveVideo] = useState<number | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [likesCount, setLikesCount] = useState<number>(0);
@@ -115,6 +114,11 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
     if (post) {
       fetchUser(post.authorId);
       fetchPostDetails();
+
+      // Iniciar o vídeo automaticamente ao carregar o componente
+      if (isVideo(post.imageUrl)) {
+        setActiveVideo(post.id);
+      }
     }
   }, [post]);
 
@@ -145,11 +149,22 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
     }
   };
 
-  const navigateToFullScreen = () => {
+  const navigateToFullScreen = async () => {
     if (isVideo(post.imageUrl)) {
+      if (activeVideo === post.id) {
+        await videoRef.current.stopAsync(); // Para o vídeo
+      }
       navigation.navigate('FullScreen', { postId: post.id });
     }
   };
+
+  const timeAgo = formatDistanceToNow(new Date(post.createdAt), {
+    addSuffix: true,
+    locale: pt,
+  });
+
+  const displayTime =
+    differenceInSeconds(new Date(), new Date(post.createdAt)) < 60 ? 'Agora mesmo' : timeAgo;
 
   return (
     <View style={styles.post}>
@@ -189,6 +204,7 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
                 shouldPlay={activeVideo === post.id}
                 isMuted={isMuted}
                 onError={handleMediaError}
+                isLooping
               />
             </TouchableOpacity>
             <TouchableOpacity style={styles.muteButton} onPress={toggleMute}>
@@ -219,16 +235,11 @@ const PostFeed: React.FC<PostFeedProps> = ({ post, navigation, onCommentButtonCl
           <TouchableOpacity
             onPress={() => onCommentButtonClick(post.id)}
             style={styles.commentsContainer}>
-            <Icon name="message-circle" size={20} color="#fff" />
+            <Feather name="message-circle" size={20} color="#fff" />
             <Text style={styles.comments}>{commentsCount}</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.time}>
-          {formatDistanceToNow(new Date(post.createdAt), {
-            addSuffix: true,
-            locale: pt,
-          }).replace('aproximadamente', '')}
-        </Text>
+        <Text style={styles.time}>{displayTime.replace('aproximadamente', '')}</Text>
       </View>
     </View>
   );

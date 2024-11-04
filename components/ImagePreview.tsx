@@ -1,7 +1,7 @@
+import { Feather } from '@expo/vector-icons';
 import { CameraType } from 'expo-camera';
 import React, { useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import Icon from 'react-native-vector-icons/Feather';
 
 import GoBackAlert from './GoBackAlert';
 
@@ -43,7 +43,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
       />
       <View style={styles.container}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Icon name="arrow-left" size={24} color="#fff" />
+          <Feather name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.forwardButton} onPress={onForward}>
           <Text style={styles.text}>Avançar</Text>

@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   chats: {
-    padding: 20,
+    padding: 10,
   },
   chat: {
     display: 'flex',
