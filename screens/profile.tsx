@@ -1,10 +1,8 @@
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import TabMenu from '../components/TabMenu';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
-
 import {
   StyleSheet,
   Text,
@@ -14,12 +12,12 @@ import {
   TouchableOpacity,
   Animated,
   FlatList,
+  StatusBar,
 } from 'react-native';
-import {Feather} from '@expo/vector-icons';
-import {MaterialIcons} from '@expo/vector-icons';
-import api from '../services/api';
 
+import TabMenu from '../components/TabMenu';
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 interface UserData {
   id: number;
@@ -153,7 +151,7 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-                <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+        <StatusBar barStyle="dark-content" backgroundColor="#121212" />
 
         <ActivityIndicator size="large" color="#5312C2" />
       </View>
@@ -178,7 +176,12 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>@{userData ? userData.username : 'user'}</Text>
             {userData?.Subscription?.isActive && (
-              <MaterialIcons name="verified" size={16} color="#FFC000" style={styles.verifiedIcon} />
+              <MaterialIcons
+                name="verified"
+                size={16}
+                color="#FFC000"
+                style={styles.verifiedIcon}
+              />
             )}
           </View>
         </View>
@@ -219,21 +222,21 @@ const Profile: React.FC<Props> = ({ navigation, route }) => {
       </View>
       <View style={styles.line} />
       {posts.length > 0 ? (
-      <FlatList
-        data={posts}
-        renderItem={renderPost}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.posts}
-        numColumns={numColumns}
-        key={`grid-${numColumns}`}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-      />
-    ) : (
-      <View style={styles.noPostsContainer}>
-        <Text style={styles.noPostsText}>@{userData?.username} não tem nenhuma publicação</Text>
-      </View>
-    )}
+        <FlatList
+          data={posts}
+          renderItem={renderPost}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.posts}
+          numColumns={numColumns}
+          key={`grid-${numColumns}`}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+      ) : (
+        <View style={styles.noPostsContainer}>
+          <Text style={styles.noPostsText}>@{userData?.username} não tem nenhuma publicação</Text>
+        </View>
+      )}
       <TabMenu navigation={navigation} />
     </View>
   );
@@ -339,7 +342,6 @@ const styles = StyleSheet.create({
   },
   posts: {
     paddingBottom: 20,
-    
   },
   usernameContainer: {
     flexDirection: 'row',
@@ -362,7 +364,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 14,
     opacity: 0.4,
-    top: -100
+    top: -100,
   },
 });
 

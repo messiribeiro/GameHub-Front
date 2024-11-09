@@ -1,10 +1,9 @@
 /* eslint-disable prettier/prettier */
+import {Feather} from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image, Alert } from 'react-native';
-import {Feather} from "@expo/vector-icons";
-import { StatusBar } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image, Alert, StatusBar} from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 import api from '../services/api';

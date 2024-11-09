@@ -1,17 +1,15 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-expressions */
+import {Feather} from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert, ActivityIndicator, StatusBar} from 'react-native';
 import { TextInput } from 'react-native-gesture-handler';
-import {Feather} from '@expo/vector-icons';
-import api from '../services/api';
-import { StatusBar } from 'react-native';
-
 
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'ChatWindow'>;
 

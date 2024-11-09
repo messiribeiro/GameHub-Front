@@ -4,7 +4,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState, useEffect } from 'react';
 import {MaterialIcons} from '@expo/vector-icons';
-import { StatusBar } from 'react-native';
 
 import {
   StyleSheet,
@@ -16,6 +15,7 @@ import {
   Dimensions,
   ListRenderItem,
   ActivityIndicator,
+  StatusBar
 } from 'react-native';
 import api from '../services/api';
 

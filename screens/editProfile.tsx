@@ -1,11 +1,11 @@
 /* eslint-disable prettier/prettier */
+import {MaterialIcons} from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import * as FileSystem from 'expo-file-system';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
-import {MaterialIcons} from '@expo/vector-icons';
-import { StatusBar } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, StatusBar } from 'react-native';
+
 
 
 import { RootStackParamList } from '../navigation';
@@ -176,7 +176,7 @@ const EditProfile: React.FC<Props> = ({ navigation, route }) => {
         placeholder="Nome de usuário"
         value={username}
         onChangeText={setUsername}
-        placeholderTextColor={"white"}
+        placeholderTextColor="white"
 
       />
       <Text style={styles.label}>Bio</Text>
@@ -185,7 +185,7 @@ const EditProfile: React.FC<Props> = ({ navigation, route }) => {
         placeholder="Consigo jogar das 22h até às 3h da manhã..."
         value={bio}
         onChangeText={setBio}
-        placeholderTextColor={"white"}
+        placeholderTextColor="white"
       />
       <TouchableOpacity style={styles.button} onPress={handleSave}>
         <Text style={styles.buttonText}>Salvar Alterações</Text>

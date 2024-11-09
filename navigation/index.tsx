@@ -49,12 +49,12 @@ export type RootStackParamList = {
   EditPostInfo: { photoUri: string; cameraType: string };
   Galery: { isProfilePicture: boolean };
   FullScreen: { postId: string };
-  EditProfile: { profilePictureUri: string };
+  EditProfile: { profilePictureUri: string | null };
   Subscribe: undefined;
   GameRegister: { imageUri?: string | null };
   GameImageSelect: undefined;
   GamePreview: undefined;
-  Dashboard: undefined;
+  Dashboard: { from?: string | null };
   Payment: { type: string };
 };
 

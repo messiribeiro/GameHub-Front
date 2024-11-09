@@ -2,8 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'; // Importar AsyncStorage
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useState, useEffect} from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import { StatusBar } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 
@@ -34,7 +33,7 @@ const SignUpStep1 = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
 
       <Text style={styles.title}>Escolha um nome de usuário</Text>
       <Text style={styles.subtitle}>Você pode trocá-lo depois</Text>

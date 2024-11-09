@@ -1,14 +1,8 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContext } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
-import CommentSection from '../components/CommentSection';
-import Header from '../components/Header';
-import MenuModal from '../components/MenuModal';
-import PostFeed from '../components/PostFeed';
-import TabMenu from '../components/TabMenu';
 import React, { useEffect, useState, useRef } from 'react';
-import { StatusBar } from 'react-native';
-
 import {
   View,
   Text,
@@ -23,11 +17,16 @@ import {
   PanResponder,
   TouchableWithoutFeedback,
   BackHandler,
+  StatusBar,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import api from '../services/api';
 
+import CommentSection from '../components/CommentSection';
+import Header from '../components/Header';
+import MenuModal from '../components/MenuModal';
+import PostFeed from '../components/PostFeed';
+import TabMenu from '../components/TabMenu';
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'Home'>;
 
@@ -74,7 +73,6 @@ const Home = ({ navigation }: Props) => {
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
 
-
   useEffect(() => {
     const newUser = navigation.addListener('focus', () => {
       const previousRouteName = navigation.getState().routes[navigation.getState().index - 1]?.name;
@@ -85,7 +83,7 @@ const Home = ({ navigation }: Props) => {
         fetchUserStats(); // Recarrega as estatísticas do usuário
       }
     });
-  
+
     return newUser; // Limpa o listener ao desmontar
   }, [navigation]);
 
@@ -123,7 +121,7 @@ const Home = ({ navigation }: Props) => {
   useEffect(() => {
     const loadUserId = async () => {
       const id = await AsyncStorage.getItem('userId');
-      console.log(id)
+      console.log(id);
       setUserId(id);
     };
 
@@ -180,16 +178,16 @@ const Home = ({ navigation }: Props) => {
       const response = await api.get('/api/post');
       const newPosts = response.data.reverse().slice(0, postLimit);
       setPosts(newPosts);
-  
+
       // Atualiza jogos do usuário
       await fetchUserGames();
-  
+
       // Atualiza todos os jogos
       await fetchAllGames();
-  
+
       // Atualiza estatísticas do usuário
       await fetchUserStats();
-  
+
       console.log(userData); // Confirma se o userData está atualizado
     } catch (error) {
       console.error('Erro ao atualizar dados:', error);
@@ -197,7 +195,6 @@ const Home = ({ navigation }: Props) => {
       setRefreshing(false);
     }
   };
-
 
   const handleImagePress = (gameId: number) => {
     navigation.navigate('FindGamer', { gameId });
@@ -250,9 +247,8 @@ const Home = ({ navigation }: Props) => {
   };
 
   return (
-    
     <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
 
       <MenuModal
         key={`menu-${refreshing}`} // Usando o estado 'refreshing' para gerar uma chave dinâmica

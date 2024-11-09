@@ -2,8 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
-
 import {
   View,
   Text,
@@ -12,11 +10,12 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator, // Adicione o ActivityIndicator
+  ActivityIndicator,
+  StatusBar,
 } from 'react-native';
-import api from '../services/api'; // Importando a configuração da API
 
 import { RootStackParamList } from '../navigation';
+import api from '../services/api'; // Importando a configuração da API
 
 type Props = StackScreenProps<RootStackParamList, 'Chat'>;
 

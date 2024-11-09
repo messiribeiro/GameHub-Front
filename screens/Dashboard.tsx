@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
@@ -10,12 +11,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  StatusBar,
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import api from '../services/api';
 
 import { RootStackParamList } from '../navigation';
-import { StatusBar } from 'react-native';
+import api from '../services/api';
 
 interface Game {
   id: number;
@@ -33,7 +33,7 @@ const Dashboard = ({ navigation, route }: Props) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const { from } = route.params || {}; // Desestrutura o parâmetro 'from'
+  const { from } = route.params || {};
 
   useEffect(() => {
     const loadUserId = async () => {

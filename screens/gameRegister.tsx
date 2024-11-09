@@ -1,9 +1,8 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
 import { StackScreenProps } from '@react-navigation/stack';
 import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
-
 import {
   View,
   Text,
@@ -14,8 +13,8 @@ import {
   Image,
   Alert,
   BackHandler,
+  StatusBar,
 } from 'react-native';
-import {Feather} from '@expo/vector-icons';
 
 import { RootStackParamList } from '../navigation';
 

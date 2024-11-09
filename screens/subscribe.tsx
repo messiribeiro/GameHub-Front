@@ -1,13 +1,12 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-import api from '../services/api';
-import { StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'Subscribe'>;
 

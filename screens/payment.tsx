@@ -1,10 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
 import * as WebBrowser from 'expo-web-browser';
-import { StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, StatusBar } from 'react-native';
 
 import { RootStackParamList } from '../navigation';
 import api from '../services/api';
@@ -18,7 +17,7 @@ const Payment = ({ navigation, route }: Props) => {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const storedUserId = await AsyncStorage.getItem("userId");
+      const storedUserId = await AsyncStorage.getItem('userId');
       setUserId(storedUserId);
     };
 
@@ -30,13 +29,13 @@ const Payment = ({ navigation, route }: Props) => {
     try {
       const successUrl = 'https://myapp.com/success';
       const cancelUrl = 'https://myapp.com/cancel';
-        console.log(type);
+      console.log(type);
       // Fazer a requisição para o backend e passar os parâmetros necessários
       const response = await api.post('/api/subscriptions/checkout-session', {
-        userId: userId,
-        type: type,
-        successUrl: successUrl,
-        cancelUrl: cancelUrl,
+        userId,
+        type,
+        successUrl,
+        cancelUrl,
       });
 
       // Extrair a URL do Stripe Checkout diretamente do response.data
@@ -57,7 +56,7 @@ const Payment = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
-              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
 
       <Text>Redirecionando para o pagamento...</Text>
     </View>

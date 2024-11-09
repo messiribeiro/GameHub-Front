@@ -1,11 +1,10 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { Video, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import React, { useState, useRef, useEffect } from 'react';
-import { StatusBar } from 'react-native';
-
 import {
   View,
   StyleSheet,
@@ -15,13 +14,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  StatusBar,
 } from 'react-native';
-import {Feather} from '@expo/vector-icons';
-
-import api from '../services/api';
 
 import GoBackAlert from '../components/GoBackAlert';
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'EditPostInfo'>;
 
@@ -200,7 +198,7 @@ const EditPostInfo = ({ navigation, route }: Props) => {
 
   return (
     <View style={styles.container}>
-              <StatusBar barStyle="dark-content" backgroundColor="#121212" />
+      <StatusBar barStyle="dark-content" backgroundColor="#121212" />
 
       <ScrollView
         contentContainerStyle={styles.scrollContainer}

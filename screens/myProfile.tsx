@@ -1,15 +1,14 @@
 /* eslint-disable prettier/prettier */
+import {MaterialIcons} from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
-import TabMenu from '../components/TabMenu';
 import { Video, ResizeMode as VideoResizeMode } from 'expo-av';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
-import {MaterialIcons} from '@expo/vector-icons';
-import api from '../services/api';
-import { StatusBar } from 'react-native';
+import { StyleSheet, Text, View, Image, ActivityIndicator, TouchableOpacity, FlatList, StatusBar} from 'react-native';
 
+import TabMenu from '../components/TabMenu';
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 interface UserData {
   id: number;

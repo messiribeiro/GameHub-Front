@@ -1,11 +1,9 @@
+import { Feather, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StackScreenProps } from '@react-navigation/stack';
 import axios, { AxiosError } from 'axios';
-import CommentSection from '../components/CommentSection';
 import { Video, ResizeMode } from 'expo-av';
 import React, { useEffect, useState, useRef } from 'react';
-import { StatusBar } from 'react-native';
-
 import {
   View,
   StyleSheet,
@@ -17,12 +15,12 @@ import {
   Modal,
   TouchableOpacity,
   PanResponder,
+  StatusBar,
 } from 'react-native';
-import {Feather} from '@expo/vector-icons';
-import {MaterialIcons} from '@expo/vector-icons';
-import api from '../services/api';
 
+import CommentSection from '../components/CommentSection';
 import { RootStackParamList } from '../navigation';
+import api from '../services/api';
 
 type Props = StackScreenProps<RootStackParamList, 'FullScreen'>;
 
